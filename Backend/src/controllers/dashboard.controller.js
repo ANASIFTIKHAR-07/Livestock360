@@ -1,0 +1,172 @@
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { Animal } from "../models/animal.model.js";
+import { HealthRecord } from "../models/healthRecord.model.js";
+
+const getDashboardOverview = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // 1. Animal Statistics
+    const totalAnimals = await Animal.countDocuments({
+        userId,
+        isActive: true
+    });
+    
+    const animalsByStatus = await Animal.aggregate([
+        {
+            $match: {
+                userId: userId,
+                isActive: true
+            }
+        },
+        {
+            $group: {
+                _id: '$status',
+                count: { $sum: 1 }
+            }
+        }
+    ]);
+    
+    const statusCounts = {
+        healthy: 0,
+        needAttention: 0,
+        critical: 0,
+        unknown: 0
+    };
+    
+    animalsByStatus.forEach(item => {
+        switch (item._id) {
+            case 'Healthy':
+                statusCounts.healthy = item.count;
+                break;
+            case 'Attention':
+                statusCounts.needAttention = item.count;
+                break;
+            case 'Critical':
+                statusCounts.critical = item.count;
+                break;
+            case 'Unknown':
+                statusCounts.unknown = item.count;
+                break;
+        }
+    });
+    
+    // 2. Upcoming Vaccinations (next 7 days)
+    const weekFromNow = new Date(today);
+    weekFromNow.setDate(weekFromNow.getDate() + 7);
+    
+    const upcomingVaccinations = await HealthRecord.find({
+        userId,
+        status: 'Scheduled',
+        nextDueDate: {
+            $gte: today,
+            $lte: weekFromNow
+        }
+    })
+    .populate('animalId', 'tagNumber name type photo')
+    .sort({ nextDueDate: 1 })
+    .limit(5)
+    .select('type title nextDueDate');
+    
+    // 3. Overdue Items
+    const overdueCount = await HealthRecord.countDocuments({
+        userId,
+        status: 'Scheduled',
+        nextDueDate: { $lt: today }
+    });
+    
+    // 4. Recent Activity (last 10 actions)
+    // Combine recent animals and health records
+    const recentAnimals = await Animal.find({
+        userId,
+        isActive: true
+    })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .select('tagNumber name type photo createdAt');
+    
+    const recentHealthRecords = await HealthRecord.find({
+        userId
+    })
+    .populate('animalId', 'tagNumber name type')
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .select('type title animalId createdAt');
+    
+    // Combine and sort by date
+    const recentActivity = [
+        ...recentAnimals.map(animal => ({
+            type: 'animal_added',
+            data: {
+                tagNumber: animal.tagNumber,
+                name: animal.name,
+                animalType: animal.type,
+                photo: animal.photo
+            },
+            timestamp: animal.createdAt
+        })),
+        ...recentHealthRecords.map(record => ({
+            type: 'health_record_added',
+            data: {
+                recordType: record.type,
+                title: record.title,
+                animal: record.animalId ? {
+                    tagNumber: record.animalId.tagNumber,
+                    name: record.animalId.name
+                } : null
+            },
+            timestamp: record.createdAt
+        }))
+    ]
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    .slice(0, 10);
+    
+    // 5. Health Statistics
+    const totalHealthRecords = await HealthRecord.countDocuments({ userId });
+    
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const recordsThisMonth = await HealthRecord.countDocuments({
+        userId,
+        createdAt: { $gte: startOfMonth }
+    });
+    
+    // 6. Quick Actions Data
+    const needsAttentionAnimals = await Animal.find({
+        userId,
+        status: { $in: ['Attention', 'Critical'] },
+        isActive: true
+    })
+    .select('tagNumber name type status photo')
+    .limit(3);
+    
+    return res.status(200).json(
+        new ApiResponse(200, {
+            animals: {
+                total: totalAnimals,
+                ...statusCounts
+            },
+            upcomingVaccinations: upcomingVaccinations.map(record => ({
+                id: record._id,
+                animal: record.animalId,
+                type: record.type,
+                title: record.title,
+                dueDate: record.nextDueDate,
+                daysUntil: record.daysUntilDue?.days || 0
+            })),
+            alerts: {
+                overdueCount,
+                needsAttentionCount: statusCounts.needAttention + statusCounts.critical
+            },
+            recentActivity,
+            statistics: {
+                totalHealthRecords,
+                recordsThisMonth
+            },
+            needsAttention: needsAttentionAnimals
+        }, "Dashboard data fetched successfully")
+    );
+});
+
+export { getDashboardOverview };

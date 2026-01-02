@@ -20,11 +20,12 @@ app.use(express.static("public"))
 import userRouter from "./routes/user.routes.js"
 import animalRouter from "./routes/animal.routes.js"
 import healthRouter from "./routes/health.routes.js"
+import dashboardRouter from "./routes/dashboard.routes.js"
 
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/animals", animalRouter)
 app.use("/api/health-records", healthRouter);
-
+app.use("/api/dashboard", dashboardRouter);
 
 
 // Health check route
