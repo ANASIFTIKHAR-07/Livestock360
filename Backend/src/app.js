@@ -18,9 +18,27 @@ app.use(express.static("public"))
 
 
 import userRoutes from "./routes/user.routes.js"
+import animalRoutes from "./routes/animal.routes.js"
 
 app.use("/api/v1/users", userRoutes)
+app.use("/api/v1/animals", animalRoutes)
 
 
 
+// Health check route
+app.get("/", (req, res) => {
+    res.json({ 
+        success: true,
+        message: "Livestock360 API is running!",
+        timestamp: new Date().toISOString()
+    });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "Route not found"
+    });
+});
 export {app}
