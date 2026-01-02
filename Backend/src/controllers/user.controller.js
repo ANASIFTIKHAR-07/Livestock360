@@ -18,6 +18,43 @@ const addAccessAndRefreshToken = async (userId)=> {
     }
 }
 
+
+const registerUser = asyncHandler(async(req, res)=> {
+    const {fullName, userName, email, password} = req.body
+
+    if(
+        [password, userName, email, fullName].some((field)=> field?.trim() === '')
+    ) {
+        throw new ApiError(400, "All fields are required.")
+    }
+
+    const existedUser = await User.findOne({
+        $or:  [{ email }, { userName }]
+    })
+
+    if (existedUser) {
+        throw new ApiError(409, "User with email or username already exists.")
+    }
+
+    const user = await User.create({
+        fullName, 
+        email,
+        password,
+        userName: userName.toLowerCase()
+    })
+
+    const createdUser = await User.findbyId(user._id).select(
+        "-password -refreshToken"
+    )
+
+    if (!createdUser) {
+        throw new ApiError(500, "Something went wrong while registering user")
+    }
+    return res.status(201).json(
+        new ApiResponse(200, createdUser, "User is regiestered Successfully")
+     )
+})
+
 const login = asyncHandler(async(req, res)=> {
     const {email, password} = req.body;
 
@@ -162,6 +199,7 @@ const getCurrentUser = asyncHandler(async(req, res)=> {
 
 
 export {
+    registerUser,
     login,
     logout,
     accessRefreshToken,
