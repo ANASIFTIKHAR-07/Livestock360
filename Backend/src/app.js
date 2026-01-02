@@ -17,11 +17,13 @@ app.use(express.urlencoded({limit: "16kb", extended: true}))
 app.use(express.static("public"))
 
 
-import userRoutes from "./routes/user.routes.js"
-import animalRoutes from "./routes/animal.routes.js"
+import userRouter from "./routes/user.routes.js"
+import animalRouter from "./routes/animal.routes.js"
+import healthRouter from "./routes/health.routes.js"
 
-app.use("/api/v1/users", userRoutes)
-app.use("/api/v1/animals", animalRoutes)
+app.use("/api/v1/users", userRouter)
+app.use("/api/v1/animals", animalRouter)
+app.use("/api/health-records", healthRouter);
 
 
 
