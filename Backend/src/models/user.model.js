@@ -20,7 +20,7 @@ const userSchema = new Schema(
         },
         password: {
             type: String,
-            required: true,
+            required: [true, "Password is required"],
             minLength: [8, "Atleast 8 characters required"] 
         },
         refreshToken: {
