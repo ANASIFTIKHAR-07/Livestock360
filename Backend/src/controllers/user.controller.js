@@ -43,7 +43,7 @@ const registerUser = asyncHandler(async(req, res)=> {
         userName: userName.toLowerCase()
     })
 
-    const createdUser = await User.findbyId(user._id).select(
+    const createdUser = await User.findById(user._id).select(
         "-password -refreshToken"
     )
 
@@ -133,14 +133,14 @@ const logout = asyncHandler( async (req, res)=> {
 })
 
 const accessRefreshToken = asyncHandler( async(req, res)=> {
-    const incommingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
 
-    if(!incommingRefreshToken){
+    if(!incomingRefreshToken){
         throw new ApiError(401, "Unauthorized Request !")
     }
     try {
         const decodedToken = jwt.verify(
-            incommingRefreshToken,
+            incomingRefreshToken,
             process.env.REFRESH_TOKEN_SECRET,
         )
 
