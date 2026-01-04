@@ -77,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.lungcancerapp"
+    namespace "com.livestock360"
     defaultConfig {
-        applicationId "com.lungcancerapp"
+        applicationId "com.livestock360"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

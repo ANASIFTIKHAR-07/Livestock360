@@ -1,4 +1,4 @@
-package com.lungcancerapp
+package com.livestock360
 
 import android.app.Application
 import com.facebook.react.PackageList
