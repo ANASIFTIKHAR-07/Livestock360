@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const REFRESH_KEY = '@refresh_token';
+
 
 // Typed API Response Wrapper
 export interface ApiResponse<T = any> {
@@ -68,9 +70,29 @@ apiClient.interceptors.response.use(
         case 401:
           // Unauthorized - clear token and redirect to login
           try {
-            await AsyncStorage.removeItem(TOKEN_KEY);
+            const storedRefresh = await AsyncStorage.getItem(REFRESH_KEY);
+            if (storedRefresh) {
+              // Call refresh-token API
+              const res = await axios.post('/auth/refresh-token', { token: storedRefresh });
+              const newToken = res.data.data.accessToken;
+              const newRefresh = res.data.data.refreshToken;
+        
+              // Save new tokens
+              await AsyncStorage.setItem(TOKEN_KEY, newToken);
+              if (newRefresh) await AsyncStorage.setItem(REFRESH_KEY, newRefresh);
+        
+              // Update axios headers and retry the original request
+              if (error.config && error.config.headers) {
+                error.config.headers.Authorization = `Bearer ${newToken}`;
+                return axios.request(error.config);
+              }
+            } else {
+              // No refresh token, clear everything
+              await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_KEY]);
+            }
           } catch {
-            // Error clearing auth token
+            // Refresh failed, clear tokens
+            await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_KEY]);
           }
           // You can emit an event or handle logout here
           break;

@@ -6,7 +6,11 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "lib": ["ESNext", "DOM"],       // ✅ add this
+    "target": "ESNext",             // ✅ modern JS target
+    "allowJs": true,                // ✅ allow JS files if needed
+    "jsx": "react-native" 
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules", "ios/Pods"]
