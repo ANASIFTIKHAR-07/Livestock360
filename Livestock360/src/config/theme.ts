@@ -24,7 +24,11 @@ export const colors = {
   
     // Borders & Dividers
     border: '#E5E7EB',
-    divider: '#D1D5DB'
+    divider: '#D1D5DB',
+
+    card: '#FFFFFF',   // card backgrounds
+    grayLight: '#F3F4F6', // light gray for placeholders
+    white: '#FFFFFF' // for buttons/text on primary
   } as const;
   
   // --------------------
