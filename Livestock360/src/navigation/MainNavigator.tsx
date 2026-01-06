@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import AnimalsScreen from '../screens/animals/AnimalListScreen';
 import HealthRecordsScreen from '../screens/health/HealthRecordsScreen';
-import ProfileScreen from '../screens/profile/ProfileScreen';
+import ProfileScreen from '../screens/profile/ProfileScreen.tsx';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../config/theme';
 

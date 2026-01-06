@@ -10,7 +10,7 @@ export interface AnimalCardProps {
   name: string;
   type: string;
   status: 'Healthy' | 'Attention' | 'Critical' | 'Unknown';
-  photo?: string;
+  photo: string | undefined;  
   onPress?: () => void;
 }
 
