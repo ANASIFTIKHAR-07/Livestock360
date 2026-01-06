@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import AuthNavigator from "./AuthNavigator";
 import MainNavigator from "./MainNavigator";
 import { navigationRef } from "./navigationRef";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -18,8 +19,11 @@ const AppNavigator = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    // Optionally, return a loading screen while checking auth
-    return null;
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
   }
 
   return (
@@ -34,5 +38,13 @@ const AppNavigator = () => {
     </NavigationContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
 export default AppNavigator;

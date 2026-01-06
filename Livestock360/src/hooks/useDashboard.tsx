@@ -15,8 +15,8 @@ export const useDashboard = () => {
       const res: APIResponse<DashboardOverview> = await getDashboardOverview();
       setData(res.data);
     } catch (err: any) {
-      console.error('Dashboard fetch error:', err);
-      setError(err?.message || 'Failed to fetch dashboard data');
+      console.error('useDashboard error:', err);
+      setError(err?.message || 'Failed to fetch dashboard overview');
     } finally {
       setLoading(false);
     }
@@ -33,6 +33,7 @@ export const useDashboard = () => {
     refetch: fetchDashboard,
   };
 };
+
 
 // // src/hooks/useDashboard.ts
 // import { useState, useEffect, useCallback } from 'react';

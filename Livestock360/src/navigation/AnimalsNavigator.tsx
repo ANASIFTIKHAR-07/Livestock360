@@ -12,7 +12,13 @@ const Stack = createNativeStackNavigator<AnimalsStackParamList>();
 
 const AnimalsNavigator = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: '#f8f8f8' },
+        headerTintColor: '#333',
+        animation: 'slide_from_right',
+      }}
+    >
       <Stack.Screen
         name="AnimalList"
         component={AnimalListScreen}

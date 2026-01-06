@@ -1,7 +1,7 @@
 // src/context/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as authApi from "../api/auth.api";
+import { authApi } from "../api"; // Using aggregator
 
 // --------------------
 // Types
@@ -104,6 +104,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
       await AsyncStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
       await AsyncStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    } catch (error: any) {
+      throw new Error(error?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -113,6 +115,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       await authApi.register(payload);
+    } catch (error: any) {
+      throw new Error(error?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -129,13 +133,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!refreshToken) return;
     try {
       const response = await authApi.refreshToken(refreshToken);
-      const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data || {};
+
+      if (!newAccessToken) throw new Error("Invalid refresh response");
 
       setAccessToken(newAccessToken);
       setRefreshToken(newRefreshToken);
+
       await AsyncStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
       await AsyncStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to refresh token:", error);
       await logout();
     }

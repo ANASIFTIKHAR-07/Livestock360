@@ -6,7 +6,7 @@ import {
   updateAnimal as apiUpdateAnimal, 
   Animal, 
   APIResponse 
-} from '../api/animal.api'
+} from '../api/animal.api';
 
 export const useAnimals = (initialFilters?: Record<string, any>) => {
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -14,6 +14,7 @@ export const useAnimals = (initialFilters?: Record<string, any>) => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Record<string, any>>(initialFilters || {});
 
+  // Fetch animal list
   const fetchAnimals = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -43,12 +44,12 @@ export const useAnimals = (initialFilters?: Record<string, any>) => {
     }
   };
 
-  // Update animal
+  // Update an animal
   const updateAnimal = async (id: string, data: Partial<Animal>): Promise<void> => {
     try {
       await apiUpdateAnimal(id, data);
       await fetchAnimals(); // refresh list after update
-    } catch (err) {
+    } catch (err: any) {
       console.error('updateAnimal error:', err);
       throw err;
     }

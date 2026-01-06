@@ -1,3 +1,4 @@
+// src/navigation/HealthNavigator.tsx
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HealthRecordsScreen from '../screens/health/HealthRecordsScreen';
@@ -16,7 +17,10 @@ const Stack = createNativeStackNavigator<HealthStackParamList>();
 
 const HealthNavigator = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      initialRouteName="HealthList"
+      screenOptions={{ headerShown: true }}
+    >
       <Stack.Screen
         name="HealthList"
         component={HealthRecordsScreen}
