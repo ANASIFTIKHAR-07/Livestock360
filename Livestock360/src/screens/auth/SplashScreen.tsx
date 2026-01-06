@@ -1,35 +1,29 @@
+// src/screens/auth/SplashScreen.tsx
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { useAuth } from '../../context/AuthContext';
+import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../../navigation/AuthNavigator';
 import { colors, spacing } from '../../config/theme';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../navigation/AppNavigator';
 
-type SplashScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'Auth'
->;
+type SplashScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Splash'>;
 
 const SplashScreen = () => {
-  const { user, loading } = useAuth();
   const navigation = useNavigation<SplashScreenNavigationProp>();
 
   useEffect(() => {
-    if (!loading) {
-      // Optional: small delay for better UX
-      setTimeout(() => {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: user ? 'Main' : 'Auth' }],
-        });
-      }, 500);
-    }
-  }, [user, loading, navigation]);
+    const timer = setTimeout(() => {
+      navigation.replace('Login');
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color={colors.primary} />
+      <Text style={styles.title}>Livestock360</Text>
+      <Text style={styles.subtitle}>Smart Livestock Management</Text>
+      <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
     </View>
   );
 };
@@ -39,9 +33,24 @@ export default SplashScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.md,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: colors.background,
+    marginBottom: spacing.xs,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: colors.background,
+    opacity: 0.9,
+    marginBottom: spacing.xl,
+  },
+  loader: {
+    marginTop: spacing.lg,
   },
 });

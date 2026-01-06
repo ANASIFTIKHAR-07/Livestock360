@@ -9,12 +9,18 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../../navigation/AuthNavigator';
 import { useAuth } from '../../context/AuthContext';
 import { colors, typography, spacing, dimensions } from '../../config/theme';
 import { isRequired, isEmail, minLength } from '../../utils/validators';
 
+type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
+
 export const LoginScreen: React.FC = () => {
   const { login } = useAuth();
+  const navigation = useNavigation<LoginScreenNavigationProp>();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -76,6 +82,14 @@ export const LoginScreen: React.FC = () => {
         >
           <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
         </TouchableOpacity>
+
+        {/* Sign Up Section - ADD THIS */}
+        <View style={styles.signupSection}>
+          <Text style={styles.signupText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+            <Text style={styles.signupLink}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -135,5 +149,24 @@ const styles = StyleSheet.create({
   buttonText: {
     ...typography.button,
     color: '#fff',
+  },
+  // ADD THESE NEW STYLES
+  signupSection: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: spacing.lg,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  signupText: {
+    ...typography.body,
+    color: colors.textLight,
+  },
+  signupLink: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

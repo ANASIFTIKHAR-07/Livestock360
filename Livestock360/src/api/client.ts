@@ -1,8 +1,11 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { getItem, setItem, removeItem, multiRemove } from '../utils/storage';
+import { API_BASE_URL } from '@env';
+
 
 const REFRESH_KEY = '@refresh_token';
-
+const TOKEN_KEY = '@auth_token';
+const USER_KEY = '@auth_user';
 
 // Typed API Response Wrapper
 export interface ApiResponse<T = any> {
@@ -22,10 +25,9 @@ declare const process: {
 };
 
 // Get base URL from environment variable
-const BASE_URL = (process?.env?.API_BASE_URL || process?.env?.REACT_APP_API_BASE_URL || 'http://localhost:5000/api') as string;
+const BASE_URL = API_BASE_URL || 'http://192.168.18.202:8000/api';
 
-// Token storage key
-const TOKEN_KEY = '@auth_token';
+console.log('🌐 API Base URL:', BASE_URL);
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -36,6 +38,24 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
+// CRITICAL: Prevent infinite refresh loops
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 // Request interceptor to attach auth token
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
@@ -45,7 +65,7 @@ apiClient.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (error) {
-      // Error retrieving auth token
+      console.error('Error retrieving auth token:', error);
     }
     return config;
   },
@@ -60,55 +80,120 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError<ApiResponse>) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
     // Handle different error scenarios
     if (error.response) {
-      // Server responded with error status
       const status = error.response.status;
       const data = error.response.data;
 
-      switch (status) {
-        case 401:
-          // Unauthorized - clear token and redirect to login
-          try {
-            const storedRefresh = await getItem(REFRESH_KEY);
-            if (storedRefresh) {
-              // Call refresh-token API
-              const res = await axios.post(`${BASE_URL}/v1/users/refresh-token`, { refreshToken: storedRefresh });
-              const newToken = res.data.data.accessToken;
-              const newRefresh = res.data.data.refreshToken;
-        
-              // Save new tokens
-              await setItem(TOKEN_KEY, newToken);
-              if (newRefresh) await setItem(REFRESH_KEY, newRefresh);
-        
-              // Update axios headers and retry the original request
-              if (error.config && error.config.headers) {
-                error.config.headers.Authorization = `Bearer ${newToken}`;
-                return axios.request(error.config);
+      // Handle 401 Unauthorized with token refresh
+      if (status === 401 && originalRequest && !originalRequest._retry) {
+        // If already refreshing, queue this request
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then(token => {
+              if (originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
               }
-            } else {
-              // No refresh token, clear everything
-              await multiRemove([TOKEN_KEY, REFRESH_KEY]);
-            }
-          } catch {
-            // Refresh failed, clear tokens
-            await multiRemove([TOKEN_KEY, REFRESH_KEY]);
+              return apiClient.request(originalRequest);
+            })
+            .catch(err => {
+              return Promise.reject(err);
+            });
+        }
+
+        // Mark this request as retried
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          const storedRefresh = await getItem(REFRESH_KEY);
+          
+          if (!storedRefresh) {
+            throw new Error('No refresh token available');
           }
-          // You can emit an event or handle logout here
-          break;
-          case 403:
-            return Promise.reject({ ...error, message: 'Access denied. You do not have permission.' });
-          case 404:
-            return Promise.reject({ ...error, message: 'Resource not found.' });
-          case 500:
-            return Promise.reject({ ...error, message: 'Server error. Please try again later.' });
-          break;
+
+          console.log('🔄 Attempting token refresh...');
+
+          // Call refresh token API
+          const res = await axios.post(`${BASE_URL}/v1/users/refresh-token`, {
+            refreshToken: storedRefresh
+          });
+
+          const newToken = res.data.data?.accessToken;
+          const newRefresh = res.data.data?.refreshToken;
+
+          if (!newToken) {
+            throw new Error('No access token in refresh response');
+          }
+
+          console.log('✅ Token refreshed successfully');
+
+          // Save new tokens
+          await setItem(TOKEN_KEY, newToken);
+          if (newRefresh) {
+            await setItem(REFRESH_KEY, newRefresh);
+          }
+
+          // Update the original request with new token
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          }
+
+          // Process queued requests
+          processQueue(null, newToken);
+          isRefreshing = false;
+
+          // Retry the original request
+          return apiClient.request(originalRequest);
+
+        } catch (refreshError) {
+          console.error('❌ Token refresh failed:', refreshError);
+          
+          // Clear queue with error
+          processQueue(refreshError, null);
+          isRefreshing = false;
+
+          // Clear all auth data
+          await multiRemove([TOKEN_KEY, REFRESH_KEY, USER_KEY]);
+
+          // Reject with clear logout signal
+          return Promise.reject({
+            ...error,
+            message: 'Session expired. Please login again.',
+            shouldLogout: true,
+          });
+        }
+      }
+
+      // Handle other status codes
+      switch (status) {
+        case 403:
+          return Promise.reject({
+            ...error,
+            message: 'Access denied. You do not have permission.',
+            status,
+          });
+        case 404:
+          return Promise.reject({
+            ...error,
+            message: 'Resource not found.',
+            status,
+          });
+        case 500:
+          return Promise.reject({
+            ...error,
+            message: 'Server error. Please try again later.',
+            status,
+          });
         default:
-          // API Error
           break;
       }
 
-      // Return a structured error response
+      // Return structured error response
       return Promise.reject({
         ...error,
         message: data?.message || error.message || 'An error occurred',
@@ -154,4 +239,3 @@ export const getAuthToken = async (): Promise<string | null> => {
     return null;
   }
 };
-

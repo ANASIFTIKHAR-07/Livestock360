@@ -7,11 +7,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
-    "lib": ["ESNext", "DOM"],       // ✅ add this
-    "target": "ESNext",             // ✅ modern JS target
-    "allowJs": true,                // ✅ allow JS files if needed
-    "jsx": "react-native" 
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
+    "allowJs": true,
+    "jsx": "react-native",
+    "typeRoots": ["./src/types", "./node_modules/@types"]  // ✅ ADD THIS
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/types/**/*"],  // ✅ ADD src/types/**/*
   "exclude": ["node_modules", "ios/Pods"]
 }

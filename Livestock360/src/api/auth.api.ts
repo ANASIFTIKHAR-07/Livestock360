@@ -22,7 +22,7 @@ export interface LoginPayload {
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  user: User;
+  loggedInUser: User;
 }
 
 export interface APIResponse<T> {

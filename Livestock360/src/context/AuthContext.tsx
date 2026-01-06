@@ -19,7 +19,7 @@ export interface User {
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  user: User;
+  loggedInUser: User;
 }
 
 export interface RegisterPayload {
@@ -68,13 +68,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+
+  console.log('🔄 AuthProvider RENDER - loading:', loading, 'user:', user?.email || 'null');
   // Load user + tokens from AsyncStorage on mount
   useEffect(() => {
+    console.log('🚀 AuthProvider useEffect TRIGGERED');
     const loadAuth = async () => {
       try {
+        console.log('📦 Loading auth from AsyncStorage...');
         const storedUser = await AsyncStorage.getItem(USER_KEY);
         const storedAccess = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
         const storedRefresh = await AsyncStorage.getItem(REFRESH_TOKEN_KEY);
+        console.log('✅ Storage loaded:', {
+          hasUser: !!storedUser,
+          hasAccess: !!storedAccess,
+          hasRefresh: !!storedRefresh
+        });
+
 
         if (storedUser) setUser(JSON.parse(storedUser));
         if (storedAccess) setAccessToken(storedAccess);
@@ -82,6 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error("Failed to load auth data:", error);
       } finally {
+        console.log('✅✅✅ SETTING LOADING TO FALSE ✅✅✅');
         setLoading(false);
       }
     };
@@ -91,37 +102,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // --------------------
   // Functions
   // --------------------
-  const login = async (payload: LoginPayload) => {
-    setLoading(true);
-    try {
-      const response = await authApi.login(payload);
-      const { accessToken, refreshToken, user } = response.data;
+ // src/context/AuthContext.tsx
 
-      setUser(user);
-      setAccessToken(accessToken);
-      setRefreshToken(refreshToken);
+const login = async (payload: LoginPayload) => {
+  setLoading(true);
+  try {
+    const response = await authApi.login(payload);
+    
+    console.log('📥 Login response:', JSON.stringify(response, null, 2));
+    
+    // response structure: { success: true, data: { accessToken, refreshToken, loggedInUser }, message: "..." }
+    // So the actual tokens and user are in response.data
+    const { accessToken, refreshToken, loggedInUser } = response.data;
 
-      await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
-      await AsyncStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-      await AsyncStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-    } catch (error: any) {
-      throw new Error(error?.message || "Login failed");
-    } finally {
-      setLoading(false);
+    if (!accessToken || !loggedInUser) {
+      throw new Error('Invalid response from server');
     }
-  };
 
+    console.log('✅ Setting user:', loggedInUser);
+
+    setUser(loggedInUser);
+    setAccessToken(accessToken);
+    setRefreshToken(refreshToken);
+
+    await AsyncStorage.setItem(USER_KEY, JSON.stringify(loggedInUser));
+    await AsyncStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    await AsyncStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    
+    // Also save to keys used by API client
+    await AsyncStorage.setItem('@auth_token', accessToken);
+    await AsyncStorage.setItem('@refresh_token', refreshToken);
+    
+    console.log('✅ Login successful!');
+  } catch (error: any) {
+    console.error('❌ Login error:', error);
+    throw new Error(error?.message || "Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
   const register = async (payload: RegisterPayload) => {
     setLoading(true);
     try {
-      await authApi.register(payload);
+      const response = await authApi.register(payload);
+      console.log('✅ Registration successful:', response);
+      // Don't set user here, will be done in login
     } catch (error: any) {
+      console.error('❌ Registration error:', error);
       throw new Error(error?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
-
   const logout = async () => {
     setUser(null);
     setAccessToken(null);
