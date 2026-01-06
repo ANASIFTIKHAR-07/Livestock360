@@ -33,13 +33,13 @@ const HealthRecordsScreen: React.FC = () => {
         data={records}
         keyExtractor={(item) => item._id || item.title}
         renderItem={({ item }) => {
-          const status = item.status === 'Completed' ? 'Healthy' : 'Attention';
+        //   const status = item.status === 'Completed' ? 'Healthy' : 'Attention';
           return (
             <HealthRecordCard
               record={{
                 title: item.title,
                 type: item.type,
-                status,
+                status: item.status, // just pass the raw backend status
                 date: item.date,
                 notes: item.notes ?? '',
               }}

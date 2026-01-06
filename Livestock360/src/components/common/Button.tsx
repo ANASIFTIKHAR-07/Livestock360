@@ -1,28 +1,40 @@
 // src/components/common/Button.tsx
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
 import { colors, typography, spacing, dimensions, shadows } from '../../config/theme';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
   disabled?: boolean;
+  loading?: boolean;  // ← Added this prop
   style?: ViewStyle;
   textStyle?: TextStyle;
 }
 
-const Button: React.FC<ButtonProps> = ({ title, onPress, disabled = false, style, textStyle }) => {
+const Button: React.FC<ButtonProps> = ({ 
+  title, 
+  onPress, 
+  disabled = false, 
+  loading = false,  // ← Added this prop with default value
+  style, 
+  textStyle 
+}) => {
   return (
     <TouchableOpacity
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || loading}  // ← Disable when loading
       style={[
         styles.button,
-        disabled && styles.disabled,
+        (disabled || loading) && styles.disabled,  // ← Apply disabled style when loading
         style
       ]}
     >
-      <Text style={[styles.text, textStyle]}>{title}</Text>
+      {loading ? (  // ← Show spinner when loading
+        <ActivityIndicator color={colors.background} />
+      ) : (
+        <Text style={[styles.text, textStyle]}>{title}</Text>
+      )}
     </TouchableOpacity>
   );
 };

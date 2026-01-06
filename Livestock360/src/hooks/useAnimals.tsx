@@ -1,6 +1,12 @@
 // src/hooks/useAnimals.tsx
 import { useState, useEffect, useCallback } from 'react';
-import { getAnimals, Animal, APIResponse } from '../api/animal.api';
+import { 
+  getAnimals, 
+  getAnimalById as apiGetAnimalById, 
+  updateAnimal as apiUpdateAnimal, 
+  Animal, 
+  APIResponse 
+} from '../api/animal.api'
 
 export const useAnimals = (initialFilters?: Record<string, any>) => {
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -26,13 +32,35 @@ export const useAnimals = (initialFilters?: Record<string, any>) => {
     fetchAnimals();
   }, [fetchAnimals]);
 
+  // Get a single animal by ID
+  const getAnimalById = async (id: string): Promise<Animal | null> => {
+    try {
+      const res: APIResponse<Animal> = await apiGetAnimalById(id);
+      return res.data;
+    } catch (err) {
+      console.error('getAnimalById error:', err);
+      return null;
+    }
+  };
+
+  // Update animal
+  const updateAnimal = async (id: string, data: Partial<Animal>): Promise<void> => {
+    try {
+      await apiUpdateAnimal(id, data);
+      await fetchAnimals(); // refresh list after update
+    } catch (err) {
+      console.error('updateAnimal error:', err);
+      throw err;
+    }
+  };
+
   return {
     animals,
     loading,
     error,
     refetch: fetchAnimals,
     setFilters,
+    getAnimalById,
+    updateAnimal,
   };
 };
-
-

@@ -113,6 +113,15 @@ const getHealthRecords = asyncHandler(async (req, res) => {
     if (status) {
         query.status = status;
     }
+
+    // Validate date inputs
+    if (startDate && isNaN(new Date(startDate).getTime())) {
+        throw new ApiError(400, "Invalid startDate");
+    }
+
+    if (endDate && isNaN(new Date(endDate).getTime())) {
+        throw new ApiError(400, "Invalid endDate");
+    }
     
     // Filter by date range
     if (startDate || endDate) {

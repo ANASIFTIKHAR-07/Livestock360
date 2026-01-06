@@ -2,8 +2,8 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
-import AnimalsScreen from '../screens/animals/AnimalListScreen';
-import HealthRecordsScreen from '../screens/health/HealthRecordsScreen';
+import AnimalsNavigator from './AnimalsNavigator';
+import HealthNavigator from './HealthNavigator';
 import ProfileScreen from '../screens/profile/ProfileScreen.tsx';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../config/theme';
@@ -54,8 +54,8 @@ const MainNavigator = () => {
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Animals" component={AnimalsScreen} />
-      <Tab.Screen name="Health" component={HealthRecordsScreen} />
+      <Tab.Screen name="Animals" component={AnimalsNavigator} />
+      <Tab.Screen name="Health" component={HealthNavigator} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

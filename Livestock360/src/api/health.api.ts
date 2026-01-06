@@ -92,7 +92,7 @@ export interface HealthRecord {
     medicine?: string;
     dosage?: string;
     photo?: string;
-    status?: 'Completed' | 'Scheduled' | 'Overdue' | 'Cancelled';
+    status?: 'Completed' | 'Scheduled' | 'Overdue' | 'Cancelled' | undefined;
     notes?: string;
     createdAt?: string;
     updatedAt?: string;
@@ -137,9 +137,9 @@ export interface APIResponse<T> {
 // API Functions
 // --------------------
 export const getHealthRecords = async (filters?: Record<string, any>) => {
-  const res = await axios.get<APIResponse<HealthRecord[]>>('/health-records', { params: filters });
-  return res.data;
-};
+    const res = await axios.get<APIResponse<{ records: HealthRecord[], pagination: any }>>('/health-records', { params: filters });
+    return res.data; // Will now have .records property
+  };
 
 export const getHealthRecordById = async (id: string) => {
   const res = await axios.get<APIResponse<HealthRecord>>(`/health-records/${id}`);

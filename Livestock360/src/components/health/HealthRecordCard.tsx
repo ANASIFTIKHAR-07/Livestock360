@@ -5,11 +5,12 @@ import Card from '../common/Card';
 import StatusBadge from '../common/StatusBadge';
 import { colors, spacing, typography } from '../../config/theme';
 import { formatDate } from '../../utils/dateHelpers';
+import { mapHealthStatusToBadge } from '../../utils/statusMapping';
 
 export interface HealthRecord {
   title: string;
   type: string;
-  status?:"Healthy" | "Attention" | "Critical" | "Unknown";
+  status?: 'Completed' | 'Scheduled' | 'Overdue' | 'Cancelled' | undefined;
   date: string;
   notes?: string;
 }
@@ -23,7 +24,7 @@ const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record }) => {
     <Card>
       <View style={styles.header}>
         <Text style={styles.title}>{record.title}</Text>
-        <StatusBadge status={record.status ?? 'Unknown'} />
+        <StatusBadge status={mapHealthStatusToBadge(record.status)} />
       </View>
 
       <Text style={styles.type}>{record.type}</Text>
