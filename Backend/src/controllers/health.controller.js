@@ -219,7 +219,7 @@ const getUpcomingRecords = asyncHandler(async (req, res) => {
             $lte: futureDate
         }
     })
-    .populate('animalId', 'tagNumber name type photo')
+    .populate('animalId', 'tagNumber name type photo status')
     .sort({ nextDueDate: 1 })
     .select('-__v');
     
@@ -229,7 +229,7 @@ const getUpcomingRecords = asyncHandler(async (req, res) => {
         status: 'Scheduled',
         nextDueDate: { $lt: today }
     })
-    .populate('animalId', 'tagNumber name type photo')
+    .populate('animalId', 'tagNumber name type photo status')
     .sort({ nextDueDate: 1 })
     .select('-__v');
     

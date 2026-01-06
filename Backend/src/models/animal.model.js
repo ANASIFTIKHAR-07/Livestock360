@@ -38,9 +38,17 @@ const animalSchema = new Schema({
             message: '{VALUE} is not a valid gender'
         }
     },
+    birthDate: {
+        type: Date,
+        required: [true, "Birth date is required"],
+        index: true
+    },
     weight: {
         type: Number,
         min: [0, "Weight cannot be negative"],
+    },
+    photo: {
+        type: String
     },
     status: {
         type: String,

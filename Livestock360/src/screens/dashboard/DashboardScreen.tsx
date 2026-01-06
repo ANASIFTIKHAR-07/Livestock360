@@ -1,10 +1,11 @@
 // src/screens/dashboard/DashboardScreen.tsx
 import React from 'react';
 import { View, ScrollView, Text, StyleSheet } from 'react-native';
-import { useDashboard } from '../../hooks/useDashboad';
+import { useDashboard } from '../../hooks/useDashboard';
+import { DashboardOverview } from '../../api/dashboard.api';
 import { colors, typography, spacing } from '../../config/theme';
-import StatCard from '../../components/animals/AnimalStats';
-import AlertCard from '../../components/health/UpcomingCard';
+import StatCard from '../../components/animals/AnimalStats.tsx';
+import AlertCard from '../../components/health/UpcommingCard';
 import LoadingSpinner from '../../components/common/LoadinSpinner';
 import EmptyState from '../../components/common/EmptyState';
 import { SafeAreaWrapper } from '../../components/layout/SafeAreaWrapper';
@@ -66,7 +67,7 @@ const DashboardScreen = () => {
           {/* Alerts */}
           <Text style={styles.sectionTitle}>Upcoming Vaccinations</Text>
           {data.upcomingVaccinations.length ? (
-            data.upcomingVaccinations.map(item => (
+            data.upcomingVaccinations.map((item: DashboardOverview['upcomingVaccinations'][number]) => (
               <AlertCard
                 key={item.id}
                 animal={item.animal}
@@ -74,6 +75,7 @@ const DashboardScreen = () => {
                 title={item.title}
                 dueDate={item.dueDate}
                 daysUntil={item.daysUntil}
+                status={item.status || item.animal?.status}
               />
             ))
           ) : (
@@ -93,14 +95,23 @@ const DashboardScreen = () => {
           {/* Recent Activity */}
           <Text style={styles.sectionTitle}>Recent Activity</Text>
           {data.recentActivity.length ? (
-            data.recentActivity.map((item, index) => (
-              <AlertCard
-                key={index}
-                type={item.type}
-                data={item.data}
-                timestamp={item.timestamp}
-              />
-            ))
+            data.recentActivity.map((item: DashboardOverview['recentActivity'][number], index: number) => {
+              const isAnimal = item.type === 'animal_added';
+              const title = isAnimal ? 'Animal added' : 'Health record added';
+              const detail = isAnimal
+                ? `${item.data?.name || 'Unknown'} (${item.data?.tagNumber || 'N/A'})`
+                : `${item.data?.recordType || 'Record'} for ${item.data?.animal?.name || 'animal'}`;
+
+              return (
+                <View key={index} style={styles.activityCard}>
+                  <Text style={styles.activityTitle}>{title}</Text>
+                  <Text style={styles.activityDetail}>{detail}</Text>
+                  <Text style={styles.activityTimestamp}>
+                    {new Date(item.timestamp).toLocaleString()}
+                  </Text>
+                </View>
+              );
+            })
           ) : (
             <EmptyState message="No recent activity." />
           )}
@@ -128,6 +139,27 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     marginVertical: spacing.lg,
+  },
+  activityCard: {
+    padding: spacing.md,
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    marginBottom: spacing.sm,
+  },
+  activityTitle: {
+    ...typography.body,
+    color: colors.text,
+    marginBottom: spacing.xs / 2,
+    fontWeight: '600',
+  },
+  activityDetail: {
+    ...typography.bodySmall,
+    color: colors.textLight,
+    marginBottom: spacing.xs,
+  },
+  activityTimestamp: {
+    ...typography.caption,
+    color: colors.textLight,
   },
 });
 

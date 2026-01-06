@@ -65,7 +65,7 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
             $lte: weekFromNow
         }
     })
-    .populate('animalId', 'tagNumber name type photo')
+    .populate('animalId', 'tagNumber name type photo status')
     .sort({ nextDueDate: 1 })
     .limit(5)
     .select('type title nextDueDate');
@@ -149,11 +149,19 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
             },
             upcomingVaccinations: upcomingVaccinations.map(record => ({
                 id: record._id,
-                animal: record.animalId,
+                animal: record.animalId ? {
+                    _id: record.animalId._id,
+                    tagNumber: record.animalId.tagNumber,
+                    name: record.animalId.name,
+                    type: record.animalId.type,
+                    photo: record.animalId.photo,
+                    status: record.animalId.status
+                } : null,
                 type: record.type,
                 title: record.title,
                 dueDate: record.nextDueDate,
-                daysUntil: record.daysUntilDue?.days || 0
+                daysUntil: record.daysUntilDue?.days || 0,
+                status: record.animalId?.status
             })),
             alerts: {
                 overdueCount,

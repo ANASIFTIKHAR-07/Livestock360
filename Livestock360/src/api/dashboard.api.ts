@@ -17,11 +17,12 @@ export interface DashboardOverview {
   };
   upcomingVaccinations: {
     id: string;
-    animal: Pick<Animal, '_id' | 'tagNumber' | 'name' | 'type' | 'photo'> | null;
+    animal: Pick<Animal, '_id' | 'tagNumber' | 'name' | 'type' | 'photo' | 'status'> | null;
     type: HealthRecord['type'];
     title: string;
     dueDate: string;
     daysUntil: number;
+    status?: Animal['status'];
   }[];
   alerts: {
     overdueCount: number;

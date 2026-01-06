@@ -3,11 +3,13 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing, typography } from '../../config/theme';
 
+export type Status = 'Healthy' | 'Attention' | 'Critical' | 'Unknown';
+
 interface StatusBadgeProps {
-  status: 'Healthy' | 'Attention' | 'Critical' | 'Unknown';
+  status: Status;
 }
 
-const statusColors: Record<string, string> = {
+const statusColors: Record<Status, string> = {
   Healthy: colors.success,
   Attention: colors.warning,
   Critical: colors.error,
@@ -15,9 +17,16 @@ const statusColors: Record<string, string> = {
 };
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
+  const normalizedStatus: Status = statusColors[status] ? status : 'Unknown';
+
   return (
-    <View style={[styles.container, { backgroundColor: statusColors[status] }]}>
-      <Text style={styles.text}>{status}</Text>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: statusColors[normalizedStatus] },
+      ]}
+    >
+      <Text style={styles.text}>{normalizedStatus}</Text>
     </View>
   );
 };

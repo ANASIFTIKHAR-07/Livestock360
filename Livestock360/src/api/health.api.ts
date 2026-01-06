@@ -160,3 +160,17 @@ export const deleteHealthRecord = async (id: string) => {
   const res = await axios.delete<APIResponse<null>>(`/health-records/${id}`);
   return res.data;
 };
+
+export const getUpcomingRecords = async (days: number = 30) => {
+  const res = await axios.get<APIResponse<{
+    upcoming: HealthRecord[];
+    overdue: HealthRecord[];
+    counts: {
+      dueToday: number;
+      dueThisWeek: number;
+      dueThisMonth: number;
+      overdue: number;
+    };
+  }>>('/health-records/upcoming', { params: { days } });
+  return res.data;
+};

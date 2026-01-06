@@ -13,6 +13,7 @@ export interface Animal {
     type: 'Cow' | 'Buffalo' | 'Goat' | 'Sheep' | 'Camel' | 'Other';
     breed?: string;
     gender: 'Male' | 'Female';
+    birthDate: string;
     weight?: number;
     status?: 'Healthy' | 'Attention' | 'Critical' | 'Unknown';
     notes?: string;

@@ -9,10 +9,11 @@ interface LoadingSpinnerProps {
   children?: React.ReactNode
 }
 
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 'large', color = colors.primary }) => {
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 'large', color = colors.primary, children }) => {
   return (
     <View style={styles.container}>
       <ActivityIndicator size={size} color={color} />
+      {children}
     </View>
   );
 };

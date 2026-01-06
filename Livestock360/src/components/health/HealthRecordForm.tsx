@@ -4,10 +4,29 @@ import Input from '../common/Input';
 import Button from '../common/Button';
 import { spacing } from '../../config/theme';
 
-const HealthRecordForm = ({ initialValues = {}, onSubmit, loading }) => {
-  const [title, setTitle] = useState(initialValues.title || '');
-  const [type, setType] = useState(initialValues.type || '');
-  const [notes, setNotes] = useState(initialValues.notes || '');
+type HealthRecordFormValues = {
+  title: string;
+  type: string;
+  notes: string;
+};
+
+interface HealthRecordFormProps {
+  initialValues?: Partial<HealthRecordFormValues>;
+  onSubmit?: (values: HealthRecordFormValues) => void;
+  loading?: boolean;
+}
+
+const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
+  initialValues = {},
+  onSubmit,
+  loading = false,
+}) => {
+  const { title: initialTitle = '', type: initialType = '', notes: initialNotes = '' } =
+    initialValues;
+
+  const [title, setTitle] = useState<string>(initialTitle);
+  const [type, setType] = useState<string>(initialType);
+  const [notes, setNotes] = useState<string>(initialNotes);
 
   const handleSubmit = () => {
     onSubmit?.({ title, type, notes });
