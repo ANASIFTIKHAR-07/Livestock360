@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { colors, typography, spacing, dimensions } from '../../config/theme';
+import { isRequired, isEmail, minLength } from '../../utils/validators';
 
 export const LoginScreen: React.FC = () => {
   const { login } = useAuth();
@@ -20,12 +21,12 @@ export const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email.trim()) {
-      Alert.alert('Validation Error', 'Email is required');
+    if (!isEmail(email)) {
+      Alert.alert('Validation Error', 'Please enter a valid email.');
       return;
     }
-    if (!password.trim()) {
-      Alert.alert('Validation Error', 'Password is required');
+    if (!isRequired(password) || !minLength(password, 8)) {
+      Alert.alert('Validation Error', 'Password must be at least 8 characters.');
       return;
     }
 

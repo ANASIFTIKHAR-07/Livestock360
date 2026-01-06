@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import { spacing } from '../../config/theme';
+import { isRequired, minLength, ValidationErrors } from '../../utils/validators';
 
 type HealthRecordFormValues = {
   title: string;
@@ -27,9 +28,29 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
   const [title, setTitle] = useState<string>(initialTitle);
   const [type, setType] = useState<string>(initialType);
   const [notes, setNotes] = useState<string>(initialNotes);
+  const [errors, setErrors] = useState<ValidationErrors<'title' | 'type'>>({});
 
   const handleSubmit = () => {
-    onSubmit?.({ title, type, notes });
+    const nextErrors: ValidationErrors<'title' | 'type'> = {};
+
+    if (!isRequired(title)) {
+      nextErrors.title = 'Title is required';
+    } else if (!minLength(title, 3)) {
+      nextErrors.title = 'Title must be at least 3 characters';
+    }
+
+    if (!isRequired(type)) {
+      nextErrors.type = 'Type is required';
+    }
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length) {
+      Alert.alert('Validation', 'Please fix the highlighted fields.');
+      return;
+    }
+
+    onSubmit?.({ title: title.trim(), type: type.trim(), notes });
   };
 
   return (
@@ -39,6 +60,7 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
         placeholder="Vaccination / Treatment"
         value={title}
         onChangeText={setTitle}
+        error={errors.title ?? null}
       />
 
       <Input
@@ -46,6 +68,7 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
         placeholder="vaccination / treatment"
         value={type}
         onChangeText={setType}
+        error={errors.type ?? null}
       />
 
       <Input

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Card from '../common/Card';
 import StatusBadge from '../common/StatusBadge';
 import { colors, spacing, typography } from '../../config/theme';
+import { formatDate } from '../../utils/dateHelpers';
 import { Animal } from '../../api/animal.api';
 import { HealthRecord } from '../../api/health.api';
 
@@ -42,9 +43,7 @@ const UpcomingCard: React.FC<UpcomingCardProps> = ({
         </Text>
       ) : null}
 
-      <Text style={styles.date}>
-        Due: {new Date(dueDate).toDateString()}
-      </Text>
+      <Text style={styles.date}>Due: {formatDate(dueDate)}</Text>
 
       <Text
         style={[

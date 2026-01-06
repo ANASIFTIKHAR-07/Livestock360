@@ -11,6 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { colors, spacing, typography } from '../../config/theme';
+import { isRequired, isEmail, minLength } from '../../utils/validators';
 
 const RegisterScreen = () => {
   const { register } = useAuth();
@@ -22,8 +23,20 @@ const RegisterScreen = () => {
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!fullName || !userName || !email || !password) {
-      Alert.alert('Error', 'All fields are required.');
+    if (!isRequired(fullName)) {
+      Alert.alert('Error', 'Full name is required.');
+      return;
+    }
+    if (!isRequired(userName) || !minLength(userName, 3)) {
+      Alert.alert('Error', 'Username must be at least 3 characters.');
+      return;
+    }
+    if (!isEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email.');
+      return;
+    }
+    if (!isRequired(password) || !minLength(password, 8)) {
+      Alert.alert('Error', 'Password must be at least 8 characters.');
       return;
     }
 

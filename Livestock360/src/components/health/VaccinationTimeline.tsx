@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { spacing, typography, colors } from '../../config/theme';
 import { HealthRecord } from '../../api/health.api';
+import { formatDate } from '../../utils/dateHelpers';
 
 type TimelineItem = Pick<HealthRecord, 'title' | 'nextDueDate'> & {
   dueDate?: string; // legacy fallback
@@ -25,9 +26,7 @@ const VaccinationTimeline: React.FC<VaccinationTimelineProps> = ({ items = [] })
           <View style={styles.dot} />
           <View style={styles.content}>
             <Text style={styles.title}>{item.title || 'Vaccination'}</Text>
-            <Text style={styles.date}>
-              {new Date(item.nextDueDate || item.dueDate || '').toDateString()}
-            </Text>
+            <Text style={styles.date}>{formatDate(item.nextDueDate || item.dueDate)}</Text>
           </View>
         </View>
       ))}

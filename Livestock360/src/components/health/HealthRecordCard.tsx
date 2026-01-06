@@ -4,6 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Card from '../common/Card';
 import StatusBadge from '../common/StatusBadge';
 import { colors, spacing, typography } from '../../config/theme';
+import { formatDate } from '../../utils/dateHelpers';
 
 export interface HealthRecord {
   title: string;
@@ -26,9 +27,7 @@ const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record }) => {
       </View>
 
       <Text style={styles.type}>{record.type}</Text>
-      <Text style={styles.date}>
-        {new Date(record.date).toDateString()}
-      </Text>
+      <Text style={styles.date}>{formatDate(record.date)}</Text>
 
       {record.notes && (
         <Text style={styles.notes}>{record.notes}</Text>

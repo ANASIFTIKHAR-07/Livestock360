@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem, setItem, removeItem, multiRemove } from '../utils/storage';
 
 const REFRESH_KEY = '@refresh_token';
 
@@ -40,7 +40,7 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
-      const token = await AsyncStorage.getItem(TOKEN_KEY);
+      const token = await getItem(TOKEN_KEY);
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -70,7 +70,7 @@ apiClient.interceptors.response.use(
         case 401:
           // Unauthorized - clear token and redirect to login
           try {
-            const storedRefresh = await AsyncStorage.getItem(REFRESH_KEY);
+            const storedRefresh = await getItem(REFRESH_KEY);
             if (storedRefresh) {
               // Call refresh-token API
               const res = await axios.post('/auth/refresh-token', { token: storedRefresh });
@@ -78,8 +78,8 @@ apiClient.interceptors.response.use(
               const newRefresh = res.data.data.refreshToken;
         
               // Save new tokens
-              await AsyncStorage.setItem(TOKEN_KEY, newToken);
-              if (newRefresh) await AsyncStorage.setItem(REFRESH_KEY, newRefresh);
+              await setItem(TOKEN_KEY, newToken);
+              if (newRefresh) await setItem(REFRESH_KEY, newRefresh);
         
               // Update axios headers and retry the original request
               if (error.config && error.config.headers) {
@@ -88,11 +88,11 @@ apiClient.interceptors.response.use(
               }
             } else {
               // No refresh token, clear everything
-              await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_KEY]);
+              await multiRemove([TOKEN_KEY, REFRESH_KEY]);
             }
           } catch {
             // Refresh failed, clear tokens
-            await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_KEY]);
+            await multiRemove([TOKEN_KEY, REFRESH_KEY]);
           }
           // You can emit an event or handle logout here
           break;
@@ -139,9 +139,9 @@ export default apiClient;
 export const setAuthToken = async (token: string | null): Promise<void> => {
   try {
     if (token) {
-      await AsyncStorage.setItem(TOKEN_KEY, token);
+      await setItem(TOKEN_KEY, token);
     } else {
-      await AsyncStorage.removeItem(TOKEN_KEY);
+      await removeItem(TOKEN_KEY);
     }
   } catch (error) {
     throw error;
@@ -151,7 +151,7 @@ export const setAuthToken = async (token: string | null): Promise<void> => {
 // Export helper function to get auth token
 export const getAuthToken = async (): Promise<string | null> => {
   try {
-    return await AsyncStorage.getItem(TOKEN_KEY);
+    return await getItem(TOKEN_KEY);
   } catch {
     return null;
   }

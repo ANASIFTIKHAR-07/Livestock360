@@ -5,7 +5,7 @@ import { colors, typography, spacing, dimensions } from '../../config/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
-  error?: string;
+  error?: string | null;
 }
 
 const Input: React.FC<InputProps> = ({ label, error, style, ...props }) => {
