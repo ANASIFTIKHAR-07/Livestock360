@@ -73,7 +73,7 @@ apiClient.interceptors.response.use(
             const storedRefresh = await getItem(REFRESH_KEY);
             if (storedRefresh) {
               // Call refresh-token API
-              const res = await axios.post('/auth/refresh-token', { token: storedRefresh });
+              const res = await axios.post(`${BASE_URL}/v1/users/refresh-token`, { refreshToken: storedRefresh });
               const newToken = res.data.data.accessToken;
               const newRefresh = res.data.data.refreshToken;
         
@@ -96,14 +96,12 @@ apiClient.interceptors.response.use(
           }
           // You can emit an event or handle logout here
           break;
-        case 403:
-          // Forbidden
-          break;
-        case 404:
-          // Not found
-          break;
-        case 500:
-          // Server error
+          case 403:
+            return Promise.reject({ ...error, message: 'Access denied. You do not have permission.' });
+          case 404:
+            return Promise.reject({ ...error, message: 'Resource not found.' });
+          case 500:
+            return Promise.reject({ ...error, message: 'Server error. Please try again later.' });
           break;
         default:
           // API Error

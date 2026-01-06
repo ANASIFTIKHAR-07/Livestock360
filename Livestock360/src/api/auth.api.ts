@@ -35,16 +35,21 @@ export interface APIResponse<T> {
 // API Functions
 // --------------------
 export const login = async (payload: LoginPayload) => {
-  const res = await axios.post<APIResponse<AuthResponse>>('/auth/login', payload);
-  return res.data;
-};
+    const res = await axios.post<APIResponse<AuthResponse>>('/v1/users/login', payload);
+    return res.data;
+  };
+  
+  export const register = async (payload: User) => {
+    const res = await axios.post<APIResponse<User>>('/v1/users/register', payload);
+    return res.data;
+  };
+  
+  export const refreshToken = async (token: string) => {
+    const res = await axios.post<APIResponse<AuthResponse>>('/v1/users/refresh-token', { refreshToken: token });
+    return res.data;
+  };
 
-export const register = async (payload: User) => {
-  const res = await axios.post<APIResponse<User>>('/auth/register', payload);
-  return res.data;
-};
-
-export const refreshToken = async (token: string) => {
-  const res = await axios.post<APIResponse<AuthResponse>>('/auth/refresh-token', { token });
-  return res.data;
-};
+  export const getCurrentUser = async (): Promise<APIResponse<User>> => {
+    const res = await axios.get<APIResponse<User>>('/v1/users/me');
+    return res.data;
+  };

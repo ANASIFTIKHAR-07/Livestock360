@@ -1,6 +1,5 @@
 // src/api/dashboard.api.ts
 import axios from './client';
-// import { API_CONFIG } from '../config/api.config';
 import { Animal } from './animal.api';
 import { HealthRecord } from './health.api';
 
@@ -50,6 +49,10 @@ export interface APIResponse<T> {
 // API Functions
 // --------------------
 export const getDashboardOverview = async (): Promise<APIResponse<DashboardOverview>> => {
-  const res = await axios.get<APIResponse<DashboardOverview>>('/dashboard/overview');
-  return res.data;
+  try {
+    const res = await axios.get<APIResponse<DashboardOverview>>('/v1/dashboard/overview');
+    return res.data;
+  } catch (error: any) {
+    throw new Error(error?.message || 'Failed to fetch dashboard overview');
+  }
 };

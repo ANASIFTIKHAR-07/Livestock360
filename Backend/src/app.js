@@ -24,8 +24,8 @@ import dashboardRouter from "./routes/dashboard.routes.js"
 
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/animals", animalRouter)
-app.use("/api/health-records", healthRouter);
-app.use("/api/dashboard", dashboardRouter);
+app.use("/api/v1/health-records", healthRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
 
 
 // Health check route
