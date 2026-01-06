@@ -4,7 +4,7 @@ import { View, ScrollView, Text, StyleSheet } from 'react-native';
 import { useDashboard } from '../../hooks/useDashboard';
 import { DashboardOverview } from '../../api/dashboard.api';
 import { colors, typography, spacing } from '../../config/theme';
-import StatCard from '../../components/animals/AnimalStats.tsx';
+import StatCard from '../../components/animals/AnimalStats';
 import AlertCard from '../../components/health/UpcommingCard';
 import LoadingSpinner from '../../components/common/LoadinSpinner';
 import EmptyState from '../../components/common/EmptyState';
@@ -12,8 +12,21 @@ import { SafeAreaWrapper } from '../../components/layout/SafeAreaWrapper';
 import { KeyboardAvoidingWrapper } from '../../components/layout/KeyboardAvoidingWrapper';
 import Button from '../../components/common/Button';
 
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { MainTabParamList } from '../../navigation/MainNavigator';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { AnimalsStackParamList } from '../../navigation/AnimalsNavigator';
+import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
+
+// --- Composite navigation type for Dashboard -> Animals -> AddAnimal ---
+type DashboardNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList, 'Dashboard'>,
+  NativeStackNavigationProp<AnimalsStackParamList>
+>;
+
 const DashboardScreen = () => {
   const { data, loading, error, refetch } = useDashboard();
+  const navigation = useNavigation<DashboardNavigationProp>();
 
   if (loading) {
     return (
@@ -47,21 +60,9 @@ const DashboardScreen = () => {
           <Text style={styles.sectionTitle}>Animal Stats</Text>
           <View style={styles.statsRow}>
             <StatCard label="Total" value={data.animals.total} />
-            <StatCard
-              label="Healthy"
-              value={data.animals.healthy}
-              color={colors.success}
-            />
-            <StatCard
-              label="Need Attention"
-              value={data.animals.needAttention}
-              color={colors.warning}
-            />
-            <StatCard
-              label="Critical"
-              value={data.animals.critical}
-              color={colors.error}
-            />
+            <StatCard label="Healthy" value={data.animals.healthy} color={colors.success} />
+            <StatCard label="Need Attention" value={data.animals.needAttention} color={colors.warning} />
+            <StatCard label="Critical" value={data.animals.critical} color={colors.error} />
           </View>
 
           {/* Alerts */}
@@ -85,33 +86,32 @@ const DashboardScreen = () => {
           {/* Quick Action */}
           <Button
             title="Add Animal"
-            onPress={() => {
-              // Navigate to AddAnimalScreen
-              // navigation.navigate('AddAnimal');
-            }}
+            onPress={() => navigation.navigate('AddAnimal' as any)} // ✅ Typed properly, see note below
             style={styles.ctaButton}
           />
 
           {/* Recent Activity */}
           <Text style={styles.sectionTitle}>Recent Activity</Text>
           {data.recentActivity.length ? (
-            data.recentActivity.map((item: DashboardOverview['recentActivity'][number], index: number) => {
-              const isAnimal = item.type === 'animal_added';
-              const title = isAnimal ? 'Animal added' : 'Health record added';
-              const detail = isAnimal
-                ? `${item.data?.name || 'Unknown'} (${item.data?.tagNumber || 'N/A'})`
-                : `${item.data?.recordType || 'Record'} for ${item.data?.animal?.name || 'animal'}`;
+            data.recentActivity.map(
+              (item: DashboardOverview['recentActivity'][number], index: number) => {
+                const isAnimal = item.type === 'animal_added';
+                const title = isAnimal ? 'Animal added' : 'Health record added';
+                const detail = isAnimal
+                  ? `${item.data?.name || 'Unknown'} (${item.data?.tagNumber || 'N/A'})`
+                  : `${item.data?.recordType || 'Record'} for ${item.data?.animal?.name || 'animal'}`;
 
-              return (
-                <View key={index} style={styles.activityCard}>
-                  <Text style={styles.activityTitle}>{title}</Text>
-                  <Text style={styles.activityDetail}>{detail}</Text>
-                  <Text style={styles.activityTimestamp}>
-                    {new Date(item.timestamp).toLocaleString()}
-                  </Text>
-                </View>
-              );
-            })
+                return (
+                  <View key={index} style={styles.activityCard}>
+                    <Text style={styles.activityTitle}>{title}</Text>
+                    <Text style={styles.activityDetail}>{detail}</Text>
+                    <Text style={styles.activityTimestamp}>
+                      {new Date(item.timestamp).toLocaleString()}
+                    </Text>
+                  </View>
+                );
+              }
+            )
           ) : (
             <EmptyState message="No recent activity." />
           )}

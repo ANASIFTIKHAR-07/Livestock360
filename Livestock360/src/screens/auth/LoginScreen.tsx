@@ -21,6 +21,7 @@ export const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    // Validation
     if (!isEmail(email)) {
       Alert.alert('Validation Error', 'Please enter a valid email.');
       return;
@@ -33,9 +34,9 @@ export const LoginScreen: React.FC = () => {
     setLoading(true);
     try {
       await login({ email, password });
-      // navigation will automatically redirect via AppNavigator
-    } catch (error: any) {
-      Alert.alert('Login Failed', error.message || 'Something went wrong');
+      // navigation handled by AppNavigator automatically
+    } catch (err: any) {
+      Alert.alert('Login Failed', err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -46,8 +47,9 @@ export const LoginScreen: React.FC = () => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.content}>
+      <View style={styles.card}>
         <Text style={styles.heading}>Welcome Back!</Text>
+
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -55,14 +57,18 @@ export const LoginScreen: React.FC = () => {
           autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
+          placeholderTextColor={colors.textLight}
         />
+
         <TextInput
           style={styles.input}
           placeholder="Password"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
+          placeholderTextColor={colors.textLight}
         />
+
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleLogin}
@@ -82,25 +88,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing.md,
   },
-  content: {
+  card: {
     backgroundColor: colors.surface,
     padding: spacing.lg,
     borderRadius: dimensions.cardBorderRadius,
     ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-      android: { elevation: 2 },
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
     }),
   },
   heading: {
     ...typography.h1,
     color: colors.text,
-    marginBottom: spacing.lg,
     textAlign: 'center',
+    marginBottom: spacing.lg,
   },
   input: {
     height: dimensions.inputHeight,
-    borderColor: colors.border,
     borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: dimensions.cardBorderRadius,
     paddingHorizontal: spacing.md,
     marginBottom: spacing.md,

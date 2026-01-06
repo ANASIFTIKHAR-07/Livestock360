@@ -12,6 +12,8 @@ export interface AnimalCardProps {
   status: 'Healthy' | 'Attention' | 'Critical' | 'Unknown';
   photo: string | undefined;  
   onPress?: () => void;
+  onEdit?: () => void;    // ✅ add
+  onDelete?: () => void; 
 }
 
 const AnimalCard: React.FC<AnimalCardProps> = ({ tagNumber, name, type, status, photo, onPress }) => {

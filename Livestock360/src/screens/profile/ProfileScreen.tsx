@@ -1,12 +1,24 @@
 // src/screens/profile/ProfileScreen.tsx
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/common/Button';
 import { colors, spacing, typography } from '../../config/theme';
 
 const ProfileScreen: React.FC = () => {
   const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Confirm Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Logout', style: 'destructive', onPress: logout },
+      ],
+      { cancelable: true }
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -23,7 +35,7 @@ const ProfileScreen: React.FC = () => {
       ) : (
         <Text style={styles.value}>Not logged in</Text>
       )}
-      <Button title="Logout" onPress={logout} style={styles.button} />
+      <Button title="Logout" onPress={handleLogout} style={styles.button} />
     </View>
   );
 };
@@ -54,5 +66,3 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
 });
-
-

@@ -23,15 +23,19 @@ const RegisterScreen = () => {
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!isRequired(fullName)) {
+    const trimmedFullName = fullName.trim();
+    const trimmedUserName = userName.trim();
+    const trimmedEmail = email.trim();
+
+    if (!isRequired(trimmedFullName)) {
       Alert.alert('Error', 'Full name is required.');
       return;
     }
-    if (!isRequired(userName) || !minLength(userName, 3)) {
+    if (!isRequired(trimmedUserName) || !minLength(trimmedUserName, 3)) {
       Alert.alert('Error', 'Username must be at least 3 characters.');
       return;
     }
-    if (!isEmail(email)) {
+    if (!isEmail(trimmedEmail)) {
       Alert.alert('Error', 'Please enter a valid email.');
       return;
     }
@@ -42,7 +46,7 @@ const RegisterScreen = () => {
 
     setLoading(true);
     try {
-      await register({ fullName, userName, email, password });
+      await register({ fullName: trimmedFullName, userName: trimmedUserName, email: trimmedEmail, password });
       Alert.alert('Success', 'Registration successful!');
     } catch (err: any) {
       Alert.alert('Error', err.message || 'Something went wrong.');

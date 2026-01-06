@@ -17,18 +17,13 @@ const SplashScreen = () => {
 
   useEffect(() => {
     if (!loading) {
-      // Navigate based on auth state
-      if (user) {
+      // Optional: small delay for better UX
+      setTimeout(() => {
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Main' }],
+          routes: [{ name: user ? 'Main' : 'Auth' }],
         });
-      } else {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Auth' }],
-        });
-      }
+      }, 500);
     }
   }, [user, loading, navigation]);
 

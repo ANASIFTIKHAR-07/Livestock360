@@ -1,14 +1,31 @@
 // src/screens/animals/AnimalListScreen.tsx
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, FlatList, StyleSheet, Text } from 'react-native';
 import { useAnimals } from '../../hooks/useAnimals';
 import AnimalCard from '../../components/animals/AnimalCard';
 import LoadingSpinner from '../../components/common/LoadinSpinner';
 import EmptyState from '../../components/common/EmptyState';
 import { spacing, colors, typography } from '../../config/theme';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { AnimalsStackParamList } from '../../navigation/AnimalsNavigator';
 
 const AnimalListScreen: React.FC = () => {
   const { animals, loading, error, refetch } = useAnimals();
+  const navigation = useNavigation<NavigationProp<AnimalsStackParamList>>();
+
+  const handleAnimalPress = useCallback(
+    (id: string) => {
+      navigation.navigate('AnimalDetail', { animalId: id });
+    },
+    [navigation],
+  );
+
+  const handleAnimalEdit = useCallback(
+    (id: string) => {
+      navigation.navigate('EditAnimal', { animalId: id });
+    },
+    [navigation],
+  );
 
   if (loading) {
     return (
@@ -31,7 +48,7 @@ const AnimalListScreen: React.FC = () => {
       <Text style={styles.heading}>Animals</Text>
       <FlatList
         data={animals}
-        keyExtractor={(item) => item._id || item.tagNumber}
+        keyExtractor={item => item._id || item.tagNumber}
         renderItem={({ item }) => (
           <AnimalCard
             tagNumber={item.tagNumber}
@@ -39,6 +56,9 @@ const AnimalListScreen: React.FC = () => {
             type={item.type}
             status={item.status || 'Unknown'}
             photo={item.photo}
+            onPress={() => handleAnimalPress(item._id!)}
+            onEdit={() => handleAnimalEdit(item._id!)}
+            onDelete={refetch} // optionally refresh after deletion
           />
         )}
         contentContainerStyle={styles.listContent}
@@ -64,5 +84,3 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
 });
-
-

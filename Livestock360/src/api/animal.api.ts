@@ -31,6 +31,19 @@ export interface Animal {
     };
   }
 
+  export interface CreateAnimalPayload {
+    tagNumber: string;
+    name?: string;
+    type: 'Cow' | 'Buffalo' | 'Goat' | 'Sheep' | 'Camel' | 'Other';
+    gender: 'Male' | 'Female';
+    userId: string;
+    birthDate: string;
+    breed?: string;
+    weight?: number;
+    notes?: string;
+  }
+  
+
 export interface APIResponse<T> {
   data: T;
   message?: string;
@@ -58,7 +71,10 @@ export const getAnimalById = async (id: string) => {
     }
   };
 
-  export const createAnimal = async (payload: Animal, file?: File) => {
+  export const createAnimal = async (
+    payload: CreateAnimalPayload,
+    file?: File
+  ) => {
     try {
       const formData = new FormData();
       Object.entries(payload).forEach(([key, value]) => {
