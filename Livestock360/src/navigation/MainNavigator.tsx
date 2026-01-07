@@ -7,10 +7,11 @@ import HealthNavigator from './HealthNavigator';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../config/theme';
+import { AnimalsStackParamList } from './AnimalsNavigator';
 
 export type MainTabParamList = {
   Dashboard: undefined;
-  Animals: undefined;
+  Animals: { screen?: keyof AnimalsStackParamList; params?: any }; 
   Health: undefined;
   Profile: undefined;
 };

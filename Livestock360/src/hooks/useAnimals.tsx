@@ -5,7 +5,7 @@ import {
   getAnimalById as apiGetAnimalById, 
   updateAnimal as apiUpdateAnimal, 
   Animal, 
-  APIResponse 
+  // APIResponse 
 } from '../api/animal.api';
 
 export const useAnimals = (initialFilters?: Record<string, any>) => {
@@ -19,10 +19,12 @@ export const useAnimals = (initialFilters?: Record<string, any>) => {
     setLoading(true);
     setError(null);
     try {
-      const res: APIResponse<Animal[]> = await getAnimals(filters);
-      setAnimals(res.data);
+      const res = await getAnimals(filters);
+      console.log('✅ Animals fetched:', res.data.animals?.length);
+      // Extract animals from nested response
+      setAnimals(res.data.animals || []);
     } catch (err: any) {
-      console.error('useAnimals error:', err);
+      console.error('❌ useAnimals error:', err);
       setError(err?.message || 'Failed to load animals');
     } finally {
       setLoading(false);
@@ -36,7 +38,7 @@ export const useAnimals = (initialFilters?: Record<string, any>) => {
   // Get a single animal by ID
   const getAnimalById = async (id: string): Promise<Animal | null> => {
     try {
-      const res: APIResponse<Animal> = await apiGetAnimalById(id);
+      const res = await apiGetAnimalById(id);
       return res.data;
     } catch (err) {
       console.error('getAnimalById error:', err);

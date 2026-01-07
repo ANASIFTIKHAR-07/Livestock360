@@ -1,29 +1,60 @@
-// src/screens/auth/SplashScreen.tsx
-import React, { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, StyleSheet, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
 import { colors, spacing } from '../../config/theme';
+
+// ✅ Updated logo path
+import Logo from '../../assets/images/Logo.png'
+
 
 type SplashScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Splash'>;
 
 const SplashScreen = () => {
   const navigation = useNavigation<SplashScreenNavigationProp>();
 
+  // Animation refs
+  const logoScale = useRef(new Animated.Value(0)).current;
+  const titleOpacity = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
+    // Run animations in parallel
+    Animated.parallel([
+      Animated.spring(logoScale, {
+        toValue: 1,
+        friction: 4,
+        useNativeDriver: true,
+      }),
+      Animated.timing(titleOpacity, {
+        toValue: 1,
+        duration: 1000,
+        delay: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Navigate to login after 2s
     const timer = setTimeout(() => {
       navigation.replace('Login');
-    }, 1500);
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, [navigation]);
+  }, [navigation, logoScale, titleOpacity]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Livestock360</Text>
-      <Text style={styles.subtitle}>Smart Livestock Management</Text>
-      <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+      <Animated.Image
+        source={Logo}
+        style={[styles.logo, { transform: [{ scale: logoScale }] }]}
+        resizeMode="contain"
+      />
+      <Animated.Text style={[styles.title, { opacity: titleOpacity }]}>
+        Livestock360
+      </Animated.Text>
+      <Animated.Text style={[styles.subtitle, { opacity: titleOpacity }]}>
+        Smart Livestock Management
+      </Animated.Text>
     </View>
   );
 };
@@ -38,19 +69,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.md,
   },
+  logo: {
+    width: 190,
+    height: 190,
+    marginBottom: 6, // ✅ reduced gap
+  },
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: 'bold',
     color: colors.background,
-    marginBottom: spacing.xs,
+    marginBottom: 2, // ✅ tight spacing
   },
   subtitle: {
     fontSize: 16,
     color: colors.background,
     opacity: 0.9,
-    marginBottom: spacing.xl,
-  },
-  loader: {
-    marginTop: spacing.lg,
   },
 });
+
