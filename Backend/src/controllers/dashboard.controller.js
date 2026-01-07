@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Animal } from "../models/animal.model.js";
 import { HealthRecord } from "../models/healthRecord.model.js";
+import mongoose from "mongoose";
 
 const getDashboardOverview = asyncHandler(async (req, res) => {
     const userId = req.user._id;
@@ -17,7 +18,7 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
     const animalsByStatus = await Animal.aggregate([
         {
             $match: {
-                userId: userId,
+                userId: new mongoose.Types.ObjectId(userId), 
                 isActive: true
             }
         },
@@ -28,6 +29,7 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
             }
         }
     ]);
+
     
     const statusCounts = {
         healthy: 0,
