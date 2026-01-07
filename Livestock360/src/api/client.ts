@@ -15,14 +15,6 @@ export interface ApiResponse<T = any> {
   error?: string;
 }
 
-// Declare process for environment variables
-declare const process: {
-  env: {
-    API_BASE_URL?: string;
-    REACT_APP_API_BASE_URL?: string;
-    [key: string]: string | undefined;
-  };
-};
 
 // Get base URL from environment variable
 const BASE_URL = API_BASE_URL || 'http://192.168.18.202:8000/api';

@@ -35,8 +35,8 @@ export const useAnimals = (initialFilters?: Record<string, any>) => {
     fetchAnimals();
   }, [fetchAnimals]);
 
-  // Get a single animal by ID
-  const getAnimalById = async (id: string): Promise<Animal | null> => {
+  // ✅ Wrap getAnimalById in useCallback
+  const getAnimalById = useCallback(async (id: string): Promise<Animal | null> => {
     try {
       const res = await apiGetAnimalById(id);
       return res.data;
@@ -44,10 +44,10 @@ export const useAnimals = (initialFilters?: Record<string, any>) => {
       console.error('getAnimalById error:', err);
       return null;
     }
-  };
+  }, []); // Empty deps - function doesn't depend on any state
 
-  // Update an animal
-  const updateAnimal = async (id: string, data: Partial<Animal>): Promise<void> => {
+  // ✅ Wrap updateAnimal in useCallback
+  const updateAnimal = useCallback(async (id: string, data: Partial<Animal>): Promise<void> => {
     try {
       await apiUpdateAnimal(id, data);
       await fetchAnimals(); // refresh list after update
@@ -55,7 +55,7 @@ export const useAnimals = (initialFilters?: Record<string, any>) => {
       console.error('updateAnimal error:', err);
       throw err;
     }
-  };
+  }, [fetchAnimals]);
 
   return {
     animals,

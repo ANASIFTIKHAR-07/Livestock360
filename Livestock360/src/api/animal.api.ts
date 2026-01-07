@@ -38,6 +38,7 @@ export interface CreateAnimalPayload {
   breed?: string;
   weight?: number;
   notes?: string;
+  // status: 'Healthy' | 'Attention' | 'Critical' | 'Unknown' ; 
 }
 
 // React Native file format
@@ -102,6 +103,7 @@ export const createAnimal = async (
     formData.append('type', payload.type);
     formData.append('gender', payload.gender);
     formData.append('birthDate', payload.birthDate);
+    // formData.append('status', payload.status); 
     
     // Append optional fields (only if they have values)
     if (payload.name) formData.append('name', payload.name);
@@ -163,9 +165,22 @@ export const updateAnimal = async (id: string, payload: Partial<Animal>, file?: 
   try {
     const formData = new FormData();
     
+    // Handle each field properly - skip virtual and readonly fields
     Object.entries(payload).forEach(([key, value]) => {
+      // Skip fields that shouldn't be updated
+      if (key === 'age' || key === '_id' || key === 'userId' || key === 'createdAt' || key === 'updatedAt' || key === 'isActive') {
+        return;
+      }
+      
       if (value !== undefined && value !== null) {
-        formData.append(key, value.toString());
+        // Convert to appropriate type for FormData
+        if (typeof value === 'number') {
+          formData.append(key, value.toString());
+        } else if (typeof value === 'boolean') {
+          formData.append(key, value.toString());
+        } else if (typeof value === 'string') {
+          formData.append(key, value);
+        }
       }
     });
     
@@ -178,16 +193,27 @@ export const updateAnimal = async (id: string, payload: Partial<Animal>, file?: 
       });
     }
 
+    console.log('📤 Updating animal ID:', id);
+    console.log('📦 Update payload:', payload);
+    console.log('📋 Status being sent:', payload.status);
+
     const res = await axios.put<APIResponse<Animal>>(`/v1/animals/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     
+    console.log('✅ Animal updated successfully');
+    console.log('📥 Updated animal status from server:', res.data.data?.status);
+    
     return res.data;
   } catch (error: any) {
-    throw new Error(error?.message || 'Failed to update animal');
+    console.error('❌ updateAnimal ERROR:', {
+      message: error?.message,
+      status: error?.response?.status,
+      data: error?.response?.data,
+    });
+    throw new Error(error?.response?.data?.message || error?.message || 'Failed to update animal');
   }
 };
-
 export const deleteAnimal = async (id: string) => {
   try {
     const res = await axios.delete<APIResponse<null>>(`/v1/animals/${id}`);

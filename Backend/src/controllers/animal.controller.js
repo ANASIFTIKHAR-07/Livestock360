@@ -6,7 +6,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js"
 
 
 const createAnimal = asyncHandler(async(req, res)=> {
-    const { tagNumber, name, type, breed, gender, birthDate, weight, notes } = req.body;
+    const { tagNumber, name, type, breed, gender, birthDate, weight, notes, status } = req.body;
 
     if (!tagNumber?.trim()) {
         throw new ApiError(400, "Tag number is required");
@@ -57,7 +57,8 @@ const createAnimal = asyncHandler(async(req, res)=> {
         birthDate,
         weight: weight ? Number(weight) : undefined,
         photo: photoUrl,
-        notes: notes?.trim()
+        notes: notes?.trim(),
+        status: status || 'Healthy'
     });
 
     return res.status(201).json(
@@ -164,6 +165,16 @@ const getAnimalById = asyncHandler(async(req, res)=> {
 const updateAnimal = asyncHandler(async(req, res)=> {
     const { id } = req.params;
     const { tagNumber, name, type, breed, gender, birthDate, weight, status, notes } = req.body;
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🔧 BACKEND - UPDATE ANIMAL RECEIVED');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('Animal ID:', id);
+    console.log('Raw Body:', JSON.stringify(req.body, null, 2));
+    console.log('Status from body:', status);
+    console.log('Status type:', typeof status);
+    console.log('Status truthy?', !!status);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
 
     // Find animal and verify ownership
     const animal = await Animal.findOne({
@@ -199,8 +210,22 @@ const updateAnimal = asyncHandler(async(req, res)=> {
     if (gender) animal.gender = gender;
     if (birthDate) animal.birthDate = birthDate;
     if (weight !== undefined) animal.weight = weight ? Number(weight) : null;
-    if (status) animal.status = status;
+
+
+     // ✅ CRITICAL: Status update with detailed logging
+    if (status !== undefined && status !== null && status !== '') {
+        console.log('✅ UPDATING STATUS FROM', animal.status, 'TO', status);
+        animal.status = status;
+    } else {
+        console.log('⚠️  STATUS NOT UPDATED - Value was:', status);
+    }
+    
     if (notes !== undefined) animal.notes = notes.trim();
+
+
+    if (notes !== undefined) animal.notes = notes.trim();
+
+
 
     // Handle photo upload if new photo provided
     if (req.file?.path) {
@@ -213,7 +238,18 @@ const updateAnimal = asyncHandler(async(req, res)=> {
         animal.photo = uploadedPhoto.secure_url;
     }
 
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('💾 SAVING ANIMAL WITH STATUS:', animal.status);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     await animal.save();
+
+    const savedAnimal = await Animal.findById(id).select('-__v');
+    
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('✅ ANIMAL SAVED - STATUS IN DB:', savedAnimal.status);
+    console.log('Full saved animal:', JSON.stringify(savedAnimal, null, 2));
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     return res.status(200).json(
         new ApiResponse(200, animal, "Animal updated successfully")

@@ -53,7 +53,7 @@ const animalSchema = new Schema({
     status: {
         type: String,
         enum: ['Healthy', 'Attention', 'Critical', 'Unknown'],
-        default: "Unknown",
+        default: "Healthy",
         index: true,
     },
     notes: {

@@ -87,6 +87,7 @@ const AddAnimalScreen: React.FC = () => {
       setLoading(false);
     }
   };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Add Animal</Text>
