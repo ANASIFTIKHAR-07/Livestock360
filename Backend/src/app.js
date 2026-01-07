@@ -44,4 +44,16 @@ app.use((req, res) => {
         message: "Route not found"
     });
 });
+
+
+app.use((err, req, res, next) => {
+    console.error(err); // optional logging
+    const statusCode = err.statusCode || 500;
+    res.status(statusCode).json({
+        statusCode,
+        success: false,
+        message: err.message || "Internal Server Error",
+        data: null
+    });
+});
 export {app}
