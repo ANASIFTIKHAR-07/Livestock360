@@ -5,6 +5,7 @@ import {
   getHealthRecordById as apiGetHealthRecordById,
   createHealthRecord as apiCreateHealthRecord,
   updateHealthRecord as apiUpdateHealthRecord,
+  deleteHealthRecord as apiDeleteHealthRecord,
   getUpcomingRecords as apiGetUpcomingRecords,
   HealthRecord,
   HealthRecordCreatePayload,
@@ -25,10 +26,12 @@ export const useHealthRecords = (initialFilters?: Record<string, any>) => {
     setError(null);
     try {
       const res = await getHealthRecords(filters);
-      setRecords(res.data.records);
+      console.log('✅ Health records fetched:', res.data.records?.length);
+      setRecords(res.data.records || []);
     } catch (err: any) {
-      console.error('useHealthRecords fetchRecords error:', err);
+      console.error('❌ useHealthRecords fetchRecords error:', err);
       setError(err?.message || 'Failed to load health records');
+      setRecords([]);
     } finally {
       setLoading(false);
     }
@@ -40,11 +43,12 @@ export const useHealthRecords = (initialFilters?: Record<string, any>) => {
     setError(null);
     try {
       const res = await apiGetUpcomingRecords(days);
-      const allUpcoming = [...res.data.upcoming, ...res.data.overdue];
+      const allUpcoming = [...(res.data.upcoming || []), ...(res.data.overdue || [])];
       setUpcomingRecords(allUpcoming);
     } catch (err: any) {
-      console.error('useHealthRecords fetchUpcomingRecords error:', err);
+      console.error('❌ useHealthRecords fetchUpcomingRecords error:', err);
       setError(err?.message || 'Failed to load upcoming records');
+      setUpcomingRecords([]);
     } finally {
       setLoading(false);
     }
@@ -54,38 +58,50 @@ export const useHealthRecords = (initialFilters?: Record<string, any>) => {
     fetchRecords();
   }, [fetchRecords]);
 
-  // Get a single health record by ID
-  const getHealthRecordById = async (id: string): Promise<HealthRecord | null> => {
+  // ✅ Wrap in useCallback
+  const getHealthRecordById = useCallback(async (id: string): Promise<HealthRecord | null> => {
     try {
       const res: APIResponse<HealthRecord> = await apiGetHealthRecordById(id);
       return res.data;
     } catch (err) {
-      console.error('useHealthRecords getHealthRecordById error:', err);
+      console.error('❌ useHealthRecords getHealthRecordById error:', err);
       return null;
     }
-  };
+  }, []);
 
-  // Create a new health record
-  const createHealthRecord = async (data: HealthRecordCreatePayload): Promise<void> => {
+  // ✅ Wrap in useCallback
+  const createHealthRecord = useCallback(async (data: HealthRecordCreatePayload): Promise<void> => {
     try {
       await apiCreateHealthRecord(data);
-      await fetchRecords(); // Refresh after creation
+      await fetchRecords();
     } catch (err) {
-      console.error('useHealthRecords createHealthRecord error:', err);
+      console.error('❌ useHealthRecords createHealthRecord error:', err);
       throw err;
     }
-  };
+  }, [fetchRecords]);
 
-  // Update an existing health record
-  const updateHealthRecord = async (id: string, data: HealthRecordUpdatePayload): Promise<void> => {
+  // ✅ Wrap in useCallback
+  const updateHealthRecord = useCallback(async (id: string, data: HealthRecordUpdatePayload): Promise<void> => {
     try {
       await apiUpdateHealthRecord(id, data);
-      await fetchRecords(); // Refresh after update
+      await fetchRecords();
     } catch (err) {
-      console.error('useHealthRecords updateHealthRecord error:', err);
+      console.error('❌ useHealthRecords updateHealthRecord error:', err);
       throw err;
     }
-  };
+  }, [fetchRecords]);
+
+  // ✅ NEW: Delete health record
+  const deleteHealthRecord = useCallback(async (id: string): Promise<void> => {
+    try {
+      await apiDeleteHealthRecord(id);
+      console.log('✅ Health record deleted successfully');
+      await fetchRecords(); // Refresh the list after deletion
+    } catch (err) {
+      console.error('❌ useHealthRecords deleteHealthRecord error:', err);
+      throw err;
+    }
+  }, [fetchRecords]);
 
   return {
     records,
@@ -98,5 +114,6 @@ export const useHealthRecords = (initialFilters?: Record<string, any>) => {
     getHealthRecordById,
     createHealthRecord,
     updateHealthRecord,
+    deleteHealthRecord, // ✅ Added to return object
   };
 };

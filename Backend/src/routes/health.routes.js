@@ -5,7 +5,8 @@ import {
     getRecordsByAnimal,
     getUpcomingRecords,
     updateHealthRecord,
-    deleteHealthRecord
+    deleteHealthRecord,
+    getHealthRecordById, 
 } from "../controllers/health.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -25,6 +26,7 @@ router.route("/")
     .get(getHealthRecords);                             // Get all with filters
 
 router.route("/:id")
+    .get(getHealthRecordById) 
     .put(upload.single("photo"), updateHealthRecord)    // Update with optional new photo
     .delete(deleteHealthRecord);                        // Delete record
 

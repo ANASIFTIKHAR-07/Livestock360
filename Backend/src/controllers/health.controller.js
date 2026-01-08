@@ -351,11 +351,32 @@ const deleteHealthRecord = asyncHandler(async (req, res) => {
     );
 });
 
+const getHealthRecordById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    
+    // Find record and verify ownership
+    const record = await HealthRecord.findOne({
+        _id: id,
+        userId: req.user._id
+    })
+    .populate('animalId', 'tagNumber name type photo')
+    .select('-__v');
+    
+    if (!record) {
+        throw new ApiError(404, "Health record not found");
+    }
+    
+    return res.status(200).json(
+        new ApiResponse(200, record, "Health record fetched successfully")
+    );
+});
+
 export {
     createHealthRecord,
     getHealthRecords,
     getRecordsByAnimal,
     getUpcomingRecords,
     updateHealthRecord,
-    deleteHealthRecord
+    deleteHealthRecord,
+    getHealthRecordById,
 };

@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing, typography } from '../../config/theme';
 
-export type Status = 'Healthy' | 'Attention' | 'Critical' | 'Unknown';
+export type Status = 'Healthy' | 'Attention' | 'Critical' | 'Inactive' | 'Unknown';
 
 interface StatusBadgeProps {
   status: Status;
@@ -13,6 +13,7 @@ const statusColors: Record<Status, string> = {
   Healthy: colors.success,
   Attention: colors.warning,
   Critical: colors.error,
+  Inactive: colors.textLight,
   Unknown: colors.textLight,
 };
 
