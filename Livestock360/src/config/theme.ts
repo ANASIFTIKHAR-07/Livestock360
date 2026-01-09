@@ -71,7 +71,12 @@ export const colors = {
       fontSize: 14,
       fontWeight: '400',
       lineHeight: 18
-    }
+    },
+    bodyLarge: {
+      fontSize: 16,
+      fontWeight: '500',
+      lineHeight: 24,
+    },
   } as const;
   
   // --------------------
@@ -161,6 +166,6 @@ export const colors = {
       color: colors.textLight,
       icon: 'help-circle',
       label: 'Unknown'
-    }
+    },
   } as const;
   

@@ -1,7 +1,6 @@
-// src/components/layout/Header.tsx
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
-import { colors, spacing, typography } from '../../config/theme';
+import { colors, spacing, typography, shadows, dimensions } from '../../config/theme';
 
 interface HeaderProps {
   title?: string;
@@ -22,21 +21,23 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <View style={[styles.container, style]}>
+      {/* Left */}
       <View style={styles.side}>
-        {onBack ? (
+        {onBack && (
           <TouchableOpacity onPress={onBack} style={styles.backButton} hitSlop={8}>
-            <Text style={styles.backText}>{'‹'} Back</Text>
+            <Text style={styles.backText}>‹ Back</Text>
           </TouchableOpacity>
-        ) : (
-          leftContent
         )}
+        {!onBack && leftContent}
       </View>
 
+      {/* Center */}
       <View style={styles.center}>
-        {title ? <Text style={styles.title}>{title}</Text> : null}
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        {title && <Text style={styles.title}>{title}</Text>}
+        {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>
 
+      {/* Right */}
       <View style={styles.side}>{rightContent}</View>
     </View>
   );
@@ -48,40 +49,41 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.lg,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    ...shadows.sm,
   },
   side: {
-    width: 80,
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
   center: {
-    flex: 1,
+    flex: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    ...typography.h2,
+    ...typography.h1,
     color: colors.text,
   },
   subtitle: {
-    ...typography.caption,
+    ...typography.body,
     color: colors.textLight,
     marginTop: 2,
+    textAlign: 'center',
   },
   backButton: {
-    paddingVertical: spacing.xs,
-    paddingRight: spacing.sm,
+    padding: spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: dimensions.cardBorderRadius,
   },
   backText: {
-    ...typography.bodySmall,
+    ...typography.button,
     color: colors.primary,
-    fontWeight: '600',
   },
 });
-

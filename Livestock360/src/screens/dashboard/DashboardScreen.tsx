@@ -1,7 +1,14 @@
 // src/screens/dashboard/DashboardScreen.tsx
 
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, RefreshControl } from 'react-native';
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  RefreshControl,
+  TouchableOpacity,
+} from 'react-native';
 import {
   useNavigation,
   CompositeNavigationProp,
@@ -14,6 +21,7 @@ import { DashboardOverview } from '../../api/dashboard.api';
 
 import { colors, spacing } from '../../config/theme';
 
+import Header from '../../components/layout/Header';
 import StatCard from '../../components/animals/AnimalStats';
 import AlertCard from '../../components/health/UpcommingCard';
 import Button from '../../components/common/Button';
@@ -36,7 +44,7 @@ type DashboardNavigationProp = CompositeNavigationProp<
 const DashboardScreen = () => {
   const { data, loading, error, refetch } = useDashboard();
   const navigation = useNavigation<DashboardNavigationProp>();
-  
+
   // IMPORTANT: All hooks must be called before any conditional returns
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -103,21 +111,39 @@ const DashboardScreen = () => {
         }
       >
         {/* ================= HEADER ================= */}
-        <View style={styles.header}>
+        {/* <View style={styles.header}>
           <Text style={styles.greeting}>Welcome back 👋</Text>
           <Text style={styles.subGreeting}>
             Here's a quick overview of your livestock
           </Text>
-        </View>
+        </View> */}
+        <Header
+          title="Dashboard"
+          subtitle="Here's a quick overview of your livestock"
+          rightContent={
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('Animals', { screen: 'AddAnimal' })
+              }
+              style={{
+                backgroundColor: colors.primary,
+                padding: spacing.sm,
+                borderRadius: 8,
+              }}
+            >
+              <Text style={{ color: colors.white, fontWeight: '600' }}>➕</Text>
+            </TouchableOpacity>
+          }
+        />
 
         {/* ================= PRIMARY CTA ================= */}
-        <Button
+        {/* <Button
           title="➕ Add Animal"
           onPress={() =>
             navigation.navigate('Animals', { screen: 'AddAnimal' })
           }
           style={styles.primaryCTA}
-        />
+        /> */}
 
         {/* ================= STATS ================= */}
         <Text style={styles.sectionTitle}>Animal Stats</Text>
@@ -125,10 +151,7 @@ const DashboardScreen = () => {
         <View style={styles.statsGrid}>
           <View style={styles.statRow}>
             <View style={styles.statCard}>
-              <StatCard 
-                label="Total" 
-                value={data.animals.total}
-              />
+              <StatCard label="Total" value={data.animals.total} />
             </View>
             <View style={styles.statCard}>
               <StatCard
@@ -138,7 +161,7 @@ const DashboardScreen = () => {
               />
             </View>
           </View>
-          
+
           <View style={styles.statRow}>
             <View style={styles.statCard}>
               <StatCard
@@ -179,9 +202,7 @@ const DashboardScreen = () => {
             </View>
           ) : (
             <View style={styles.emptyBox}>
-              <Text style={styles.emptyText}>
-                🎉 No upcoming vaccinations
-              </Text>
+              <Text style={styles.emptyText}>🎉 No upcoming vaccinations</Text>
             </View>
           )}
         </View>
@@ -198,7 +219,9 @@ const DashboardScreen = () => {
                   index: number,
                 ) => {
                   const isAnimal = item.type === 'animal_added';
-                  const title = isAnimal ? 'Animal added' : 'Health record added';
+                  const title = isAnimal
+                    ? 'Animal added'
+                    : 'Health record added';
 
                   const detail = isAnimal
                     ? `${item.data?.name || 'Unknown'} (${
