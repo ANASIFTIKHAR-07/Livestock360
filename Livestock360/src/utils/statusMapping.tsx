@@ -15,4 +15,5 @@ export const mapHealthStatusToBadge = (status?: HealthRecord['status']): Status 
     default: 
       return 'Unknown';
   }
+  
 };
