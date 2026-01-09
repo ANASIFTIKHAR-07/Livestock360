@@ -6,83 +6,87 @@ import { HealthRecord } from "../models/healthRecord.model.js";
 import { Animal } from "../models/animal.model.js";
 
 const createHealthRecord = asyncHandler(async (req, res) => {
-    const { 
-        animalId, 
-        type, 
-        title, 
-        description, 
-        date, 
-        nextDueDate, 
-        veterinarian, 
-        cost, 
-        medicine, 
-        dosage,
-        status,
-        notes 
+    const {
+      animalId,
+      type,
+      title,
+      description,
+      date,
+      nextDueDate,
+      veterinarian,
+      cost,
+      medicine,
+      dosage,
+      status,
+      notes
     } = req.body;
-    
-    // Validate required fields
-    if (!animalId) {
-        throw new ApiError(400, "Animal ID is required");
-    }
-    
-    if (!type) {
-        throw new ApiError(400, "Record type is required");
-    }
-    
-    if (!title?.trim()) {
-        throw new ApiError(400, "Title is required");
-    }
-    
-    // Verify animal exists and belongs to user
-    const animal = await Animal.findOne({
-        _id: animalId,
-        userId: req.user._id,
-        isActive: true
-    });
-    
-    if (!animal) {
-        throw new ApiError(404, "Animal not found or you don't have permission");
-    }
-    
-    // Handle photo upload (receipt/document)
+  
+    if (!animalId) throw new ApiError(400, "Animal ID is required");
+    if (!type) throw new ApiError(400, "Record type is required");
+    if (!title?.trim()) throw new ApiError(400, "Title is required");
+  
+    // Verify animal exists
+    const animal = await Animal.findOne({ _id: animalId, userId: req.user._id, isActive: true });
+    if (!animal) throw new ApiError(404, "Animal not found or no permission");
+  
+    // Handle photo upload
     let photoUrl = null;
     if (req.file?.path) {
-        const uploadedPhoto = await uploadOnCloudinary(req.file.path);
-        
-        if (!uploadedPhoto) {
-            throw new ApiError(500, "Failed to upload photo");
-        }
-        
-        photoUrl = uploadedPhoto.secure_url;
+      const uploadedPhoto = await uploadOnCloudinary(req.file.path);
+      if (!uploadedPhoto) throw new ApiError(500, "Failed to upload photo");
+      photoUrl = uploadedPhoto.secure_url;
     }
-    
-    // Create health record
+  
+    // ------------------------------
+    // Production-grade: handle status and nextDueDate
+    // ------------------------------
+    let recordStatus = status;
+    let recordNextDue = nextDueDate ? new Date(nextDueDate) : null;
+  
+    if (type === "Vaccination") {
+      // If no status provided, default to Scheduled for upcoming vaccinations
+      if (!recordStatus) recordStatus = "Scheduled";
+  
+      // If Scheduled but no nextDueDate provided, use today + 30 days as default
+      if (recordStatus === "Scheduled" && !recordNextDue) {
+        const defaultDue = new Date();
+        defaultDue.setDate(defaultDue.getDate() + 30);
+        recordNextDue = defaultDue;
+      }
+  
+      // If Completed, nextDueDate is null
+      if (recordStatus === "Completed") recordNextDue = null;
+    } else {
+      // For non-vaccination records, default status to Completed
+      if (!recordStatus) recordStatus = "Completed";
+    }
+  
+    // Create record
     const healthRecord = await HealthRecord.create({
-        animalId,
-        userId: req.user._id,
-        type,
-        title: title.trim(),
-        description: description?.trim(),
-        date: date || new Date(),
-        nextDueDate: nextDueDate || null,
-        veterinarian: veterinarian?.trim(),
-        cost: cost ? Number(cost) : undefined,
-        medicine: medicine?.trim(),
-        dosage: dosage?.trim(),
-        photo: photoUrl,
-        status: status || 'Completed',
-        notes: notes?.trim()
+      animalId,
+      userId: req.user._id,
+      type,
+      title: title.trim(),
+      description: description?.trim(),
+      date: date || new Date(),
+      nextDueDate: recordNextDue,
+      veterinarian: veterinarian?.trim(),
+      cost: cost ? Number(cost) : undefined,
+      medicine: medicine?.trim(),
+      dosage: dosage?.trim(),
+      photo: photoUrl,
+      status: recordStatus,
+      notes: notes?.trim()
     });
-    
-    // Populate animal info in response
+  
+    // Populate animal info
     const populatedRecord = await HealthRecord.findById(healthRecord._id)
-        .populate('animalId', 'tagNumber name type photo');
-    
+      .populate("animalId", "tagNumber name type photo status");
+  
     return res.status(201).json(
-        new ApiResponse(201, populatedRecord, "Health record added successfully")
+      new ApiResponse(201, populatedRecord, "Health record added successfully")
     );
-});
+  });
 
 
 const getHealthRecords = asyncHandler(async (req, res) => {
@@ -212,63 +216,61 @@ const getRecordsByAnimal = asyncHandler(async (req, res) => {
 
 const getUpcomingRecords = asyncHandler(async (req, res) => {
     const { days = 30 } = req.query;
-    
+    const daysNum = parseInt(days);
+  
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+  
     const futureDate = new Date(today);
-    futureDate.setDate(futureDate.getDate() + parseInt(days));
-    
-    // Get upcoming scheduled records
+    futureDate.setDate(futureDate.getDate() + daysNum);
+  
+    // Upcoming: Scheduled vaccinations/checkups
     const upcomingRecords = await HealthRecord.find({
-        userId: req.user._id,
-        status: 'Scheduled',
-        nextDueDate: {
-            $gte: today,
-            $lte: futureDate
-        }
+      userId: req.user._id,
+      status: "Scheduled",
+      nextDueDate: { $gte: today, $lte: futureDate }
     })
-    .populate('animalId', 'tagNumber name type photo status')
-    .sort({ nextDueDate: 1 })
-    .select('-__v');
-    
-    // Get overdue records
+      .populate("animalId", "tagNumber name type photo status")
+      .sort({ nextDueDate: 1 })
+      .select("-__v");
+  
+    // Overdue
     const overdueRecords = await HealthRecord.find({
-        userId: req.user._id,
-        status: 'Scheduled',
-        nextDueDate: { $lt: today }
+      userId: req.user._id,
+      status: "Scheduled",
+      nextDueDate: { $lt: today }
     })
-    .populate('animalId', 'tagNumber name type photo status')
-    .sort({ nextDueDate: 1 })
-    .select('-__v');
-    
-    // Calculate counts
+      .populate("animalId", "tagNumber name type photo status")
+      .sort({ nextDueDate: 1 })
+      .select("-__v");
+  
+    // Counts for dashboard
     const dueToday = upcomingRecords.filter(r => {
-        const due = new Date(r.nextDueDate);
-        due.setHours(0, 0, 0, 0);
-        return due.getTime() === today.getTime();
+      const due = new Date(r.nextDueDate);
+      due.setHours(0, 0, 0, 0);
+      return due.getTime() === today.getTime();
     }).length;
-    
+  
     const dueThisWeek = upcomingRecords.filter(r => {
-        const weekFromNow = new Date(today);
-        weekFromNow.setDate(weekFromNow.getDate() + 7);
-        return new Date(r.nextDueDate) <= weekFromNow;
+      const weekFromNow = new Date(today);
+      weekFromNow.setDate(weekFromNow.getDate() + 7);
+      return new Date(r.nextDueDate) <= weekFromNow;
     }).length;
-    
+  
     return res.status(200).json(
-        new ApiResponse(200, {
-            upcoming: upcomingRecords,
-            overdue: overdueRecords,
-            counts: {
-                dueToday,
-                dueThisWeek,
-                dueThisMonth: upcomingRecords.length,
-                overdue: overdueRecords.length
-            }
-        }, "Upcoming records fetched successfully")
+      new ApiResponse(200, {
+        upcoming: upcomingRecords,
+        overdue: overdueRecords,
+        counts: {
+          dueToday,
+          dueThisWeek,
+          dueThisMonth: upcomingRecords.length,
+          overdue: overdueRecords.length
+        }
+      }, "Upcoming records fetched successfully")
     );
-});
-
+  });
+  
 
 const updateHealthRecord = asyncHandler(async (req, res) => {
     const { id } = req.params;

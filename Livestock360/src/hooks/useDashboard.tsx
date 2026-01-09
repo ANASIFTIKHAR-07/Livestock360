@@ -7,6 +7,10 @@ export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    console.log('Dashboard data:', data);
+  }, [data]);
+
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
     setError(null);

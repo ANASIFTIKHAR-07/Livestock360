@@ -56,21 +56,33 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
     });
     
     // 2. Upcoming Vaccinations (next 7 days)
-    const weekFromNow = new Date(today);
-    weekFromNow.setDate(weekFromNow.getDate() + 7);
+    const monthFromNow = new Date(today);
+    monthFromNow.setDate(monthFromNow.getDate() + 30);
     
     const upcomingVaccinations = await HealthRecord.find({
         userId,
         status: 'Scheduled',
+        type: "Vaccination",
         nextDueDate: {
             $gte: today,
-            $lte: weekFromNow
+            $lte: monthFromNow
         }
     })
     .populate('animalId', 'tagNumber name type photo status')
     .sort({ nextDueDate: 1 })
     .limit(5)
-    .select('type title nextDueDate');
+    .select('type title nextDueDate animalId');
+
+    // Calculate daysUntil for frontend
+    const todayTime = today.getTime();
+    const upcomingVaccinationsWithDays = upcomingVaccinations.map(record => {
+        const dueTime = record.nextDueDate ? new Date(record.nextDueDate).getTime() : null;
+        const daysUntil = dueTime ? Math.ceil((dueTime - todayTime) / (1000 * 60 * 60 * 24)) : 0;
+        return {
+            ...record.toObject(),
+            daysUntil
+        };
+    });
     
     // 3. Overdue Items
     const overdueCount = await HealthRecord.countDocuments({
@@ -96,6 +108,8 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .limit(5)
     .select('type title animalId createdAt');
+
+
     
     // Combine and sort by date
     const recentActivity = [
@@ -133,6 +147,9 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
         userId,
         createdAt: { $gte: startOfMonth }
     });
+
+
+    
     
     // 6. Quick Actions Data
     const needsAttentionAnimals = await Animal.find({
@@ -149,7 +166,7 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
                 total: totalAnimals,
                 ...statusCounts
             },
-            upcomingVaccinations: upcomingVaccinations.map(record => ({
+            upcomingVaccinations: upcomingVaccinationsWithDays.map(record => ({
                 id: record._id,
                 animal: record.animalId ? {
                     _id: record.animalId._id,
@@ -162,7 +179,7 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
                 type: record.type,
                 title: record.title,
                 dueDate: record.nextDueDate,
-                daysUntil: record.daysUntilDue?.days || 0,
+                daysUntil: record.daysUntil || 0,
                 status: record.animalId?.status
             })),
             alerts: {
