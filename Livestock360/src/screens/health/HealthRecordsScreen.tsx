@@ -88,12 +88,17 @@ const HealthRecordsScreen: React.FC = () => {
           if (item.dosage !== undefined) record.dosage = item.dosage;
           if (item.cost !== undefined) record.cost = item.cost;
 
-          return <HealthRecordCard record={record} />;
+          return (
+            <View style={styles.cardWrapper}>
+              <HealthRecordCard record={record} />
+            </View>
+          );
         }}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshing={loading}
         onRefresh={refetch}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
       
       {/* ✅ Floating Action Button */}
@@ -110,6 +115,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    marginBottom: 10,
   },
   centerContainer: {
     flex: 1,
@@ -124,7 +130,13 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: 100, // Extra padding for FAB clearance
+  },
+  cardWrapper: {
+    marginBottom: spacing.md,
+  },
+  separator: {
+    height: spacing.sm,
   },
   fab: {
     position: 'absolute',
