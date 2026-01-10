@@ -22,7 +22,7 @@ import { DashboardOverview } from '../../api/dashboard.api';
 import { colors, spacing } from '../../config/theme';
 
 import Header from '../../components/layout/Header';
-import StatCard from '../../components/animals/AnimalStats';
+// import StatCard from '../../components/animals/AnimalStats';
 import AlertCard from '../../components/health/UpcommingCard';
 import LoadingSpinner from '../../components/common/LoadinSpinner';
 import EmptyState from '../../components/common/EmptyState';

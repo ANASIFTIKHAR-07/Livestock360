@@ -16,7 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
 import { useAuth } from '../../context/AuthContext';
-import { colors, spacing, dimensions } from '../../config/theme';
+import { colors, spacing } from '../../config/theme';
 import { isRequired, isEmail, minLength } from '../../utils/validators';
 import Logo from '../../assets/images/Logo.png';
 

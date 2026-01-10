@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Alert, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/layout/Header';
-import { colors, spacing, typography } from '../../config/theme';
+import { colors, spacing } from '../../config/theme';
 import Logo from '../../assets/images/Logo.png';
 
 const ProfileScreen: React.FC = () => {
