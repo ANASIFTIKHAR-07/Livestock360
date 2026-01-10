@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
-import { colors, spacing, typography, shadows, dimensions } from '../../config/theme';
+import { colors, spacing, typography, shadows } from '../../config/theme';
 
 interface HeaderProps {
   title?: string;
@@ -9,6 +9,7 @@ interface HeaderProps {
   leftContent?: React.ReactNode;
   rightContent?: React.ReactNode;
   style?: ViewStyle;
+  variant?: 'default' | 'minimal';
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -18,34 +19,48 @@ const Header: React.FC<HeaderProps> = ({
   leftContent,
   rightContent,
   style,
+  variant = 'default',
 }) => {
+  const isMinimal = variant === 'minimal';
+
   return (
-    <View style={[styles.container, style]}>
-      {/* Left */}
-      <View style={styles.leftSection}>
-        {onBack ? (
-          <TouchableOpacity 
-            onPress={onBack} 
-            style={styles.backButton} 
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.backIcon}>←</Text>
-            <Text style={styles.backText}>Back</Text>
-          </TouchableOpacity>
-        ) : (
-          leftContent
-        )}
-      </View>
+    <View style={[styles.container, isMinimal && styles.containerMinimal, style]}>
+      <View style={styles.content}>
+        {/* Left Section */}
+        <View style={styles.leftSection}>
+          {onBack ? (
+            <TouchableOpacity 
+              onPress={onBack} 
+              style={styles.backButton} 
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              activeOpacity={0.6}
+            >
+              <Text style={styles.backIcon}>←</Text>
+            </TouchableOpacity>
+          ) : (
+            leftContent
+          )}
+        </View>
 
-      {/* Center */}
-      <View style={styles.centerSection}>
-        {title && <Text style={styles.title} numberOfLines={1}>{title}</Text>}
-        {subtitle && <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>}
-      </View>
+        {/* Center Section */}
+        <View style={styles.centerSection}>
+          {title && (
+            <Text style={styles.title} numberOfLines={1}>
+              {title}
+            </Text>
+          )}
+          {subtitle && !isMinimal && (
+            <Text style={styles.subtitle} numberOfLines={1}>
+              {subtitle}
+            </Text>
+          )}
+        </View>
 
-      {/* Right */}
-      <View style={styles.rightSection}>{rightContent}</View>
+        {/* Right Section */}
+        <View style={styles.rightSection}>
+          {rightContent}
+        </View>
+      </View>
     </View>
   );
 };
@@ -54,66 +69,59 @@ export default Header;
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingTop: spacing.md,
+  },
+  containerMinimal: {
+    borderBottomWidth: 0,
+    backgroundColor: colors.background,
+  },
+  content: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
     paddingBottom: spacing.md,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    ...shadows.sm,
-    minHeight: 60,
+    minHeight: 56,
   },
   leftSection: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
+    minWidth: 48,
+    alignItems: 'flex-start',
   },
   centerSection: {
-    flex: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
+    flex: 1,
+    alignItems: 'flex-start',
     paddingHorizontal: spacing.sm,
   },
   rightSection: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    minWidth: 48,
+    alignItems: 'flex-end',
   },
   title: {
-    ...typography.h1,
+    fontSize: 20,
+    fontWeight: '700',
     color: colors.text,
-    fontWeight: '600',
-    fontSize: 18,
+    letterSpacing: -0.3,
   },
   subtitle: {
-    ...typography.body,
+    fontSize: 14,
     color: colors.textLight,
     marginTop: 2,
-    textAlign: 'center',
-    fontSize: 13,
+    fontWeight: '400',
   },
   backButton: {
-    flexDirection: 'row',
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xs,
-    paddingRight: spacing.sm,
-    borderRadius: 8,
-    gap: 4,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
   },
   backIcon: {
-    fontSize: 20,
-    color: colors.primary,
-    fontWeight: '500',
-  },
-  backText: {
-    ...typography.button,
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 24,
+    color: colors.text,
+    fontWeight: '600',
   },
 });
