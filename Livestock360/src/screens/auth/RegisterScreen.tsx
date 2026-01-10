@@ -9,15 +9,16 @@ import {
   Platform,
   TouchableOpacity,
   View,
+  TextInput,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/AuthNavigator';
 import { useAuth } from '../../context/AuthContext';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
-import { colors, spacing, typography } from '../../config/theme';
+import { colors, spacing, dimensions } from '../../config/theme';
 import { isRequired, isEmail, minLength } from '../../utils/validators';
+import Logo from '../../assets/images/Logo.png';
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 
@@ -29,6 +30,7 @@ const RegisterScreen = () => {
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
@@ -55,7 +57,6 @@ const RegisterScreen = () => {
 
     setLoading(true);
     try {
-      // Register the user
       await register({ 
         fullName: trimmedFullName, 
         userName: trimmedUserName, 
@@ -65,13 +66,11 @@ const RegisterScreen = () => {
       
       console.log('✅ Registration successful, attempting auto-login...');
       
-      // Auto-login after successful registration
       try {
         await login({ 
           email: trimmedEmail, 
           password 
         });
-        // Navigation will be handled automatically by AppNavigator
         console.log('✅ Auto-login successful!');
       } catch (loginError: any) {
         console.error('❌ Auto-login failed:', loginError);
@@ -91,55 +90,129 @@ const RegisterScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView
-        contentContainerStyle={styles.container}
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.heading}>Create Account</Text>
+        {/* Header Section */}
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <Image 
+              source={Logo} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+          <Text style={styles.appName}>Livestock360</Text>
+          <Text style={styles.tagline}>Join thousands of farmers</Text>
+        </View>
 
-        <Input
-          label="Full Name"
-          placeholder="John Doe"
-          value={fullName}
-          onChangeText={setFullName}
-        />
-        <Input
-          label="Username"
-          placeholder="johndoe"
-          value={userName}
-          onChangeText={setUserName}
-        />
-        <Input
-          label="Email"
-          placeholder="email@example.com"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <Input
-          label="Password"
-          placeholder="********"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        {/* Register Card */}
+        <View style={styles.card}>
+          <Text style={styles.heading}>Create Account</Text>
+          <Text style={styles.subheading}>Sign up to get started</Text>
 
-        <Button
-          title={loading ? 'Registering...' : 'Register'}
-          onPress={handleRegister}
-          disabled={loading}
-          style={styles.button}
-        />
+          {/* Full Name Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>👤 Full Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your full name"
+              value={fullName}
+              onChangeText={setFullName}
+              placeholderTextColor={colors.textLight}
+            />
+          </View>
 
-        {/* Back to Login Link */}
-        <View style={styles.loginSection}>
-          <Text style={styles.loginText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.loginLink}>Login</Text>
+          {/* Username Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>🏷️ Username</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Choose a username"
+              value={userName}
+              onChangeText={setUserName}
+              autoCapitalize="none"
+              placeholderTextColor={colors.textLight}
+            />
+          </View>
+
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>📧 Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+              placeholderTextColor={colors.textLight}
+            />
+          </View>
+
+          {/* Password Input */}
+          <View style={styles.inputContainer}>
+            <View style={styles.labelRow}>
+              <Text style={styles.inputLabel}>🔒 Password</Text>
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.toggleText}>
+                  {showPassword ? '👁️ Hide' : '👁️ Show'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Create a password"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              placeholderTextColor={colors.textLight}
+            />
+            <Text style={styles.helperText}>Must be at least 8 characters</Text>
+          </View>
+
+          {/* Register Button */}
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleRegister}
+            disabled={loading}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? '⏳ Creating account...' : '→ Create Account'}
+            </Text>
           </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Login Section */}
+          <TouchableOpacity 
+            onPress={() => navigation.navigate('Login')}
+            activeOpacity={0.7}
+            style={styles.loginButton}
+          >
+            <Text style={styles.loginText}>
+              Already have an account? <Text style={styles.loginLink}>Login</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>🌾 Join the farming community</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -150,36 +223,194 @@ export default RegisterScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: spacing.lg,
+    flex: 1,
     backgroundColor: colors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
+    padding: spacing.md,
+    paddingVertical: spacing.lg,
   },
-  heading: {
-    ...typography.h1,
+
+  // Header
+  header: {
+    alignItems: 'center',
     marginBottom: spacing.lg,
-    color: colors.text,
-    textAlign: 'center',
   },
-  button: {
-    marginTop: spacing.lg,
-  },
-  loginSection: {
-    flexDirection: 'row',
+  logoContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: spacing.lg,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    marginBottom: spacing.sm,
+    padding: spacing.sm,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
-  loginText: {
-    ...typography.body,
+  logo: {
+    width: '100%',
+    height: '100%',
+  },
+  appName: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  tagline: {
+    fontSize: 13,
     color: colors.textLight,
+    fontWeight: '400',
   },
-  loginLink: {
-    ...typography.body,
+
+  // Card
+  card: {
+    backgroundColor: colors.white,
+    padding: spacing.lg,
+    borderRadius: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  heading: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  subheading: {
+    fontSize: 13,
+    color: colors.textLight,
+    marginBottom: spacing.md,
+  },
+
+  // Inputs
+  inputContainer: {
+    marginBottom: spacing.sm,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  toggleText: {
+    fontSize: 13,
     color: colors.primary,
     fontWeight: '600',
   },
-});
+  input: {
+    height: 52,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    fontSize: 16,
+    color: colors.text,
+    backgroundColor: colors.background,
+  },
+  helperText: {
+    fontSize: 12,
+    color: colors.textLight,
+    marginTop: 4,
+  },
+
+  // Button
+  button: {
+    height: 52,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.white,
+  },
+
+  // Divider
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    marginHorizontal: spacing.md,
+    fontSize: 14,
+    color: colors.textLight,
+    fontWeight: '500',
+  },
+
+  // Login
+  loginButton: {
+    paddingVertical: spacing.sm,
+  },
+  loginText: {
+    fontSize: 15,
+    color: colors.textLight,
+    textAlign: 'center',
+  },
+  loginLink: {
+    color: colors.primary,
+    fontWeight: '700',
+  },
+
+  // Footer
+  footer: {
+    marginTop: spacing.md,
+    alignItems: 'center',
+    paddingBottom: spacing.sm,
+  },
+  footerText: {
+    fontSize: 13,
+    color: colors.textLight,
+    fontWeight: '500',
+  },
+});   
