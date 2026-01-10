@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
-import { colors, spacing, typography, shadows } from '../../config/theme';
+import { colors, spacing } from '../../config/theme';
 
 interface HeaderProps {
   title?: string;
@@ -8,6 +8,12 @@ interface HeaderProps {
   onBack?: () => void;
   leftContent?: React.ReactNode;
   rightContent?: React.ReactNode;
+  
+  // Action button props for clarity
+  actionLabel?: string;
+  actionIcon?: string;
+  onActionPress?: () => void;
+  
   style?: ViewStyle;
   variant?: 'default' | 'minimal';
 }
@@ -18,6 +24,9 @@ const Header: React.FC<HeaderProps> = ({
   onBack,
   leftContent,
   rightContent,
+  actionLabel,
+  actionIcon,
+  onActionPress,
   style,
   variant = 'default',
 }) => {
@@ -58,7 +67,20 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Right Section */}
         <View style={styles.rightSection}>
-          {rightContent}
+          {/* Use action button if provided */}
+          {actionLabel && onActionPress ? (
+            <TouchableOpacity
+              onPress={onActionPress}
+              style={styles.actionButton}
+              activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              {actionIcon && <Text style={styles.actionIcon}>{actionIcon}</Text>}
+              <Text style={styles.actionLabel}>{actionLabel}</Text>
+            </TouchableOpacity>
+          ) : (
+            rightContent
+          )}
         </View>
       </View>
     </View>
@@ -96,7 +118,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
   },
   rightSection: {
-    minWidth: 48,
+    minWidth: 80,
     alignItems: 'flex-end',
   },
   title: {
@@ -123,5 +145,23 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: colors.text,
     fontWeight: '600',
+  },
+  actionButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 40,
+  },
+  actionIcon: {
+    fontSize: 18,
+  },
+  actionLabel: {
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: 14,
   },
 });
