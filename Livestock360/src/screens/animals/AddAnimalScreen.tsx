@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { spacing, colors, typography } from '../../config/theme';
+import { spacing, colors  } from '../../config/theme';
 import {
   createAnimal,
   CreateAnimalPayload,
