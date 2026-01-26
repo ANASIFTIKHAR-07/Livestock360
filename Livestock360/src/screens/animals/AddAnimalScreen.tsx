@@ -58,6 +58,7 @@ const AddAnimalScreen: React.FC = () => {
         type,
         gender,
         birthDate,
+        
       };
   
       const trimmedName = name.trim();
