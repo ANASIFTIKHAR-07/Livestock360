@@ -204,11 +204,13 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.md,
     padding: spacing.md,
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
