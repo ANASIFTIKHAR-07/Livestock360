@@ -14,7 +14,7 @@ const ProfileScreen: React.FC = () => {
       'Confirm Logout',
       'Are you sure you want to logout?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },  
         { text: 'Logout', style: 'destructive', onPress: logout },
       ],
       { cancelable: true }
