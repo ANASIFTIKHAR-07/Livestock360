@@ -5,9 +5,15 @@ import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/layout/Header';
 import { colors, spacing } from '../../config/theme';
 import Logo from '../../assets/images/Logo.png';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ProfileStackParamList } from '../../navigation/ProfileNavigator';
+
+type ProfileScreenNavigationProp = NativeStackNavigationProp<ProfileStackParamList>;
 
 const ProfileScreen: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigation = useNavigation<ProfileScreenNavigationProp>();
 
   const handleLogout = () => {
     Alert.alert(
@@ -100,7 +106,10 @@ const ProfileScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           
-          <TouchableOpacity style={styles.actionCard}>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            activeOpacity={0.7}
+          >
             <View style={styles.actionIcon}>
               <Text style={styles.actionEmoji}>⚙️</Text>
             </View>
@@ -111,7 +120,10 @@ const ProfileScreen: React.FC = () => {
             <Text style={styles.actionArrow}>›</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard}>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            activeOpacity={0.7}
+          >
             <View style={styles.actionIcon}>
               <Text style={styles.actionEmoji}>❓</Text>
             </View>
@@ -122,7 +134,11 @@ const ProfileScreen: React.FC = () => {
             <Text style={styles.actionArrow}>›</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard}>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('About')}
+            activeOpacity={0.7}
+          >
             <View style={styles.actionIcon}>
               <Text style={styles.actionEmoji}>ℹ️</Text>
             </View>
