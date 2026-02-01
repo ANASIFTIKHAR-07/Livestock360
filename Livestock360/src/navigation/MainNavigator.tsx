@@ -4,10 +4,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import AnimalsNavigator from './AnimalsNavigator';
 import HealthNavigator from './HealthNavigator';
-import ProfileScreen from '../screens/profile/ProfileScreen';
+// import ProfileScreen from '../screens/profile/ProfileScreen';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../config/theme';
 import { AnimalsStackParamList } from './AnimalsNavigator';
+import ProfileNavigator from './ProfileNavigator';
 
 export type MainTabParamList = {
   Dashboard: undefined;
@@ -47,7 +48,8 @@ const MainNavigator = () => {
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
       <Tab.Screen name="Animals" component={AnimalsNavigator} />
       <Tab.Screen name="Health" component={HealthNavigator} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      {/* <Tab.Screen name="Profile" component={ProfileScreen} /> */}
+      <Tab.Screen name="Profile" component={ProfileNavigator} />
     </Tab.Navigator>
   );
 };
